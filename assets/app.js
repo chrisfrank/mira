@@ -9,6 +9,7 @@
       app.prompt = "Did you need to be in New York City today?";
       app.views = {
         prompt: new app.PromptView(document.getElementById('prompt')),
+        scroller: new app.ScrollView(document.getElementById('list')),
         input: new app.InputView(document.getElementById('input')),
         stats: new app.StatsView(document.getElementById('stats')),
         history: new app.HistoryView(document.getElementById('history'))
@@ -74,6 +75,19 @@
       }
     };
 
+    EntriesCollection.prototype.seed = function() {
+      var i, _results;
+      i = 0;
+      _results = [];
+      while (i < 20) {
+        this.add(new app.Entry({
+          answer: i % 2
+        }));
+        _results.push(i += 1);
+      }
+      return _results;
+    };
+
     EntriesCollection.prototype.broadcastChange = function() {
       return document.dispatchEvent(new CustomEvent('entries:changed', {
         detail: {
@@ -85,6 +99,8 @@
     return EntriesCollection;
 
   })();
+
+  document.addEventListener('app:started', function(e) {});
 
   app.Entry = (function() {
     function Entry(args) {
@@ -134,9 +150,12 @@
         throw "Cannot construct view without an HTML element";
       }
       this.el = el;
+      this.initialize();
       this.render();
       this.events();
     }
+
+    View.prototype.initialize = function() {};
 
     View.prototype.render = function() {};
 
@@ -152,6 +171,12 @@
     function PromptView() {
       return PromptView.__super__.constructor.apply(this, arguments);
     }
+
+    PromptView.prototype.events = function() {
+      return this.el.addEventListener('touchmove', function(e) {
+        return e.preventDefault();
+      });
+    };
 
     PromptView.prototype.render = function() {
       return this.el.innerHTML = "<h1>" + app.prompt + "</h1>";
@@ -169,25 +194,78 @@
     }
 
     InputView.prototype.events = function() {
-      return this.el.addEventListener('click', this.newEntry);
+      document.addEventListener('entry:create', this);
+      this.el.addEventListener(app.CLICK_EVENT, this);
+      return this.el.addEventListener('touchmove', function(e) {
+        return e.preventDefault();
+      });
+    };
+
+    InputView.prototype.handleEvent = function(e) {
+      if (e.type === app.CLICK_EVENT) {
+        this.newEntry(e);
+      }
+      if (e.type === 'entry:create') {
+        return this.hide(e);
+      }
     };
 
     InputView.prototype.newEntry = function(e) {
       var target, val;
       target = e.target;
-      val = parseInt(target.getAttribute('data-val'));
-      return document.dispatchEvent(new CustomEvent('entry:create', {
-        detail: {
-          answer: val
-        }
-      }));
+      val = target.getAttribute('data-val');
+      if (val != null) {
+        return document.dispatchEvent(new CustomEvent('entry:create', {
+          detail: {
+            answer: parseInt(val)
+          }
+        }));
+      }
+    };
+
+    InputView.prototype.hide = function() {
+      return this.el.style.display = 'none';
     };
 
     InputView.prototype.render = function() {
-      return this.el.innerHTML = "<div data-val=0 class='button button-no'>No</div> <div data-val=1 class='button button-yes'>Yes</div>";
+      return this.el.innerHTML = "<div data-val=1 class='button button-yes'>Yes</div> <div data-val=0 class='button button-no'>No</div>";
     };
 
     return InputView;
+
+  })(app.View);
+
+  app.ScrollView = (function(_super) {
+    __extends(ScrollView, _super);
+
+    function ScrollView() {
+      return ScrollView.__super__.constructor.apply(this, arguments);
+    }
+
+    ScrollView.prototype.events = function() {
+      return this.el.addEventListener('touchstart', this);
+    };
+
+    ScrollView.prototype.handleEvent = function(e) {
+      if (e.type === 'touchstart') {
+        return this.onTouchStart(e);
+      }
+    };
+
+    ScrollView.prototype.onTouchStart = function(e) {
+      var atBottom, atTop, height;
+      height = this.el.getBoundingClientRect().height;
+      atTop = this.el.scrollTop === 0;
+      atBottom = this.el.scrollHeight = -this.el.scrollTop === height;
+      if (atTop) {
+        this.el.scrollTop += 1;
+      }
+      if (atBottom) {
+        return this.el.scrollTop -= 1;
+      }
+    };
+
+    return ScrollView;
 
   })(app.View);
 
@@ -197,6 +275,10 @@
     function HistoryView() {
       return HistoryView.__super__.constructor.apply(this, arguments);
     }
+
+    HistoryView.prototype.initialize = function() {
+      return this.months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    };
 
     HistoryView.prototype.events = function() {
       return document.addEventListener('entries:changed', this);
@@ -209,13 +291,13 @@
     };
 
     HistoryView.prototype.onEntryChange = function(event) {
-      console.log('changed!');
       this.entries = event.detail.entries;
       return this.render();
     };
 
     HistoryView.prototype.render = function() {
       var entry, _i, _len, _ref, _results;
+      this.el.innerHTML = '';
       if (this.entries != null) {
         _ref = this.entries;
         _results = [];
@@ -228,14 +310,13 @@
     };
 
     HistoryView.prototype.renderEntry = function(entry) {
-      var elem;
+      var date, elem;
+      date = new Date(entry.date);
       elem = document.createElement('div');
-      elem.className = "entry entry_" + entry.answer;
+      elem.className = "entry entry-" + entry.answer;
       elem.id = "entry_" + entry.date;
-      elem.innerHTML = entry.date;
-      if (document.getElementById(elem.id) == null) {
-        return this.el.prependChild(elem);
-      }
+      elem.innerHTML = "<div class='entry_date'> " + this.months[date.getMonth()] + " " + (date.getDate()) + " </div> <div class='entry_answer'></div>";
+      return this.el.prependChild(elem);
     };
 
     return HistoryView;
@@ -243,7 +324,36 @@
   })(app.View);
 
   app.StatsView = (function() {
-    function StatsView() {}
+    function StatsView(el) {
+      if (el == null) {
+        throw "Cannot construct view without an HTML element";
+      }
+      this.el = el;
+      this.events();
+    }
+
+    StatsView.prototype.events = function() {
+      document.addEventListener('entry:create', this);
+      return document.addEventListener('entries:changed', this);
+    };
+
+    StatsView.prototype.handleEvent = function(e) {
+      if (e.type === 'entry:create') {
+        this.show();
+      }
+      if (e.type === 'entries:changed') {
+        return this.render(e);
+      }
+    };
+
+    StatsView.prototype.show = function() {
+      return this.el.style.display = 'block';
+    };
+
+    StatsView.prototype.render = function(e) {
+      this.entries = e.detail.entries;
+      return this.el.innerHTML = this.entries.length;
+    };
 
     return StatsView;
 

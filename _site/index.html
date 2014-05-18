@@ -2,21 +2,29 @@
 <html lang='en'>
   <head>
     <title>Mira</title>
-    <link rel="stylesheet" type="text/css" href="/assets/app.css" />
+    <meta name='apple-mobile-web-app-capable' content='yes' />
+    <meta name='apple-mobile-web-app-status-bar-style' content='black' />
+    <meta name='viewport' content='width=device-width, minimum-scale=1.0, maximum-scale=1.0' />
+    <link rel="stylesheet" type="text/css" href="assets/app.css" />
+    <link href="assets/apple-touch-icon-120x120.png" rel="apple-touch-icon" />
+    <link href="assets/apple-touch-startup-image-640x1096.png"
+              media="(device-width: 320px) and (device-height: 568px)
+                 and (-webkit-device-pixel-ratio: 2)"
+                 rel="apple-touch-startup-image" />
     <script>
       window.app = {}
+      app.CLICK_EVENT = 'ontouchstart' in document.documentElement ? 'touchend' : 'click'
     </script>
   </head>
   <body>
     <div id='app' class='card-container'>
       <div id="prompt"></div>
+      <div id="input"></div>
       <div id="list">
-        <div id="input"></div>
         <div id="stats"></div>
         <div id="history"></div>
       </div>
     </div>
-    <script src="/assets/lib.js"></script>
-    <script src="/assets/app.js"></script>
+    <script src="assets/app.js"></script>
   </body>
 </html>

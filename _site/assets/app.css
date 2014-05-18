@@ -4,7 +4,8 @@ html, body {
   margin: 0;
   padding: 0;
   line-height: 1.2;
-  text-align: center; }
+  text-align: center;
+  -webkit-text-size-adjust: none; }
 
 * {
   margin: 0;
@@ -18,11 +19,11 @@ html, body {
   overflow: hidden; }
 
 #prompt {
-  background: white;
-  height: auto;
+  -webkit-flex-shrink: 0;
+  padding: 16px; }
+
+#input {
   -webkit-flex-shrink: 0; }
-  #prompt h1 {
-    padding: 1em; }
 
 #list {
   overflow: auto;
@@ -30,46 +31,89 @@ html, body {
   -webkit-flex-grow: 1; }
 
 #input, #stats {
-  padding: 1em; }
+  padding: 1em;
+  height: 104px; }
 
-#history .entry {
-  height: 44px;
-  width: 100%; }
+#stats {
+  display: none; }
+
+#history {
+  margin-left: 1em; }
 
 .card {
   height: 100%; }
 
+.button {
+  height: 72px;
+  width: 72px;
+  line-height: 68px;
+  display: inline-block;
+  margin: 0 24px; }
+
+.entry {
+  display: table;
+  width: 100%;
+  padding: 1em 1em 1em 0; }
+
+.entry_date, .entry_answer {
+  display: table-cell; }
+
+.entry_date {
+  width: 80%; }
+
+.entry_answer {
+  width: 20%;
+  padding: 6px; }
+
 html, body {
-  font-family: 'avenir next', 'avenir', sans-serif;
-  font-weight: bold;
-  font-size: 16px; }
+  font-family: 'avenir', sans-serif;
+  font-size: 16px;
+  -webkit-tap-highlight-color: transparent;
+  background: black;
+  color: white;
+  font-weight: 300; }
 
 h1 {
-  font-size: 1.5em; }
+  font-size: 1.5em;
+  font-weight: 300; }
 
-#entry_view .prompt {
-  background: white; }
-  #entry_view .prompt:after {
-    content: '';
-    display: block;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    border-bottom: 1px solid #e3e3e3;
-    -webkit-transform: scaleY(0.5); }
-#entry_view .button {
-  cursor: pointer; }
-  #entry_view .button:after {
-    content: '';
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 50%;
-    height: 100%;
-    border-left: 1px solid #e3e3e3;
-    -webkit-transform: scaleX(0.5); }
-#entry_view .button-yes {
-  color: #4ad663; }
-#entry_view .button-no {
-  color: #ff3056; }
+#prompt {
+  border-bottom: 1px solid #383838; }
+
+#input, #stats {
+  border-bottom: 1px solid #383838; }
+
+.button {
+  cursor: pointer;
+  border: 2px solid;
+  border-radius: 50%;
+  background-color: black; }
+
+.button-yes {
+  border-color: #4cd964; }
+  .button-yes:active {
+    background-color: #4cd964; }
+
+.button-no {
+  border-color: #ff3b30; }
+  .button-no:active {
+    background-color: #ff3b30; }
+
+.entry {
+  border-bottom: 1px solid #383838;
+  color: white;
+  text-align: left; }
+
+.entry_answer {
+  text-align: center;
+  border-radius: 6px; }
+
+.entry-0 .entry_answer {
+  background: #ff3b30; }
+  .entry-0 .entry_answer:before {
+    content: "No"; }
+
+.entry-1 .entry_answer {
+  background: #4cd964; }
+  .entry-1 .entry_answer:before {
+    content: "Yes"; }

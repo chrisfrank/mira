@@ -6,12 +6,12 @@
 }
 
 #prompt {
-  background: white;
-  height: auto;
   -webkit-flex-shrink: 0;
-  h1 {
-    padding: 1em;
-  }
+  padding: 16px;
+}
+
+#input {
+  -webkit-flex-shrink: 0;
 }
 
 #list {
@@ -22,12 +22,14 @@
 
 #input, #stats {
   padding: 1em;
+  height: 104px;
+}
+
+#stats {
+  display: none;
 }
 
 #history {
-  .entry {
-    height: 44px;
-    width: 100%;
-  }
+  margin-left: 1em;
 }
 

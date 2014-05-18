@@ -1,3 +1,26 @@
 .card {
   height: 100%;
 }
+.button {
+  height: 72px;
+  width: 72px;
+  line-height: 68px;
+  display: inline-block;
+  margin: 0 24px;
+}
+.entry {
+  display: table;
+  width: 100%;
+  padding: 1em 1em 1em 0;
+}
+.entry_date, .entry_answer {
+  display: table-cell;
+}
+.entry_date {
+  width: 80%;
+}
+.entry_answer {
+  width: 20%;
+  padding: 6px;
+}
+

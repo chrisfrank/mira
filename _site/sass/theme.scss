@@ -1,51 +1,76 @@
-$green: #4ad663;
-$red: #ff3056;
+$green: #4cd964;
+$red: #ff3b30;
 $blue: #32aadc;
-$white: #e3e3e3;
-$black: #222;
+$grey: #efeff4;
+$dark_grey: #888888;
+$white: #f8f8f8;
+$black: #383838;
 
 html, body {
-  font-family: 'avenir next', 'avenir', sans-serif;
-  font-weight: bold;
+  font-family: 'avenir', sans-serif;
   font-size: 16px;
+  -webkit-tap-highlight-color: transparent;
+  background: black;
+  color: white;
+  font-weight: 300;
 }
 
 h1 {
   font-size: 1.5em;
+  font-weight: 300;
 }
 
-#entry_view {
-  .prompt {
-    background: white;
-    &:after {
-      content: '';
-      display: block;
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      border-bottom: 1px solid $white;
-      -webkit-transform: scaleY(0.5);
-    }
-  }
-  .button {
-    cursor: pointer;
-    &:after {
-      content: '';
-      display: block;
-      position: absolute;
-      top: 0;
-      left: 50%;
-      height: 100%;
-      border-left: 1px solid $white;
-      -webkit-transform: scaleX(0.5);
-    }
-  }
-  .button-yes {
-    color: $green;
-  }
-  .button-no {
-    color: $red;
+#prompt {
+  border-bottom: 1px solid $black;
+}
+
+#input, #stats {
+  border-bottom: 1px solid $black;
+}
+
+#history {
+}
+
+.button {
+  cursor: pointer;
+  border: 2px solid;
+  border-radius: 50%;
+  background-color: black;
+}
+
+.button-yes {
+  border-color: $green;
+  &:active {
+    background-color: $green;
   }
 }
 
+.button-no {
+  border-color: $red;
+  &:active {
+    background-color: $red;
+  }
+}
+
+.entry {
+  border-bottom: 1px solid $black;
+  color: white;
+  text-align: left;
+}
+
+.entry_answer {
+  text-align: center;
+  border-radius: 6px;
+}
+.entry-0 {
+  .entry_answer {
+    &:before { content: 'No' }
+    background: $red;
+  }
+}
+.entry-1 {
+  .entry_answer {
+    &:before { content: 'Yes' }
+    background: $green;
+  }
+}

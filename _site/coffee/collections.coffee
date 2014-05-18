@@ -28,6 +28,12 @@ class app.EntriesCollection
     else
       return
 
+  seed: ->
+    i = 0
+    while (i < 20)
+      @add new app.Entry({answer: i%2})
+      i += 1
+
   broadcastChange: ->
     document.dispatchEvent new CustomEvent('entries:changed', {
       detail:
