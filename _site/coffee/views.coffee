@@ -22,13 +22,13 @@ class app.PromptView extends app.View
 class app.InputView extends app.View
   events: ->
     document.addEventListener 'entry:create', @
+    document.addEventListener 'app:loaded', @
     @el.addEventListener app.CLICK_EVENT, @
     @el.addEventListener 'touchmove', (e) -> e.preventDefault()
 
   handleEvent: (e) ->
     @newEntry(e) if e.type == app.CLICK_EVENT
     @hide(e) if e.type == 'entry:create'
-
 
   newEntry: (e) ->
     target = e.target
@@ -41,6 +41,9 @@ class app.InputView extends app.View
 
   hide: ->
     @el.style.display = 'none'
+
+  show: ->
+    @el.style.display = 'block'
 
   render: ->
     @el.innerHTML = "
@@ -110,6 +113,8 @@ class app.StatsView
     @show() if e.type == 'entry:create'
     @render(e) if e.type == 'entries:changed'
 
+  hide: ->
+    @el.style.display = 'none'
   show: ->
     @el.style.display = 'block'
 

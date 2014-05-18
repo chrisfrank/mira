@@ -12,6 +12,7 @@
 
 #input, #stats {
   -webkit-flex-shrink: 0;
+  display: none;
 }
 
 #list {
@@ -27,7 +28,6 @@
 }
 
 #stats {
-  display: none;
   .percentages {
     position: relative;
     height: 1em;

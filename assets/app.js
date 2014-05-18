@@ -5,6 +5,7 @@
 
   app.AppController = (function() {
     function AppController() {
+      var lastDate, lastEntry, now;
       document.dispatchEvent(new CustomEvent('app:starting'));
       app.prompt = "Did you need to be in New York City today?";
       app.views = {
@@ -16,6 +17,18 @@
       };
       app.entries = new app.EntriesCollection();
       this.listen();
+      lastEntry = app.entries.getRecords().pop();
+      if (lastEntry) {
+        lastDate = new Date(lastEntry.date).setHours(0, 0, 0, 0);
+        now = new Date().setHours(0, 0, 0, 0);
+        if (now > lastEntry) {
+          app.views.input.show();
+        } else {
+          app.views.stats.show();
+        }
+      } else {
+        app.views.input.show();
+      }
       document.dispatchEvent(new CustomEvent('app:loaded'));
     }
 
@@ -195,6 +208,7 @@
 
     InputView.prototype.events = function() {
       document.addEventListener('entry:create', this);
+      document.addEventListener('app:loaded', this);
       this.el.addEventListener(app.CLICK_EVENT, this);
       return this.el.addEventListener('touchmove', function(e) {
         return e.preventDefault();
@@ -225,6 +239,10 @@
 
     InputView.prototype.hide = function() {
       return this.el.style.display = 'none';
+    };
+
+    InputView.prototype.show = function() {
+      return this.el.style.display = 'block';
     };
 
     InputView.prototype.render = function() {
@@ -345,6 +363,10 @@
       if (e.type === 'entries:changed') {
         return this.render(e);
       }
+    };
+
+    StatsView.prototype.hide = function() {
+      return this.el.style.display = 'none';
     };
 
     StatsView.prototype.show = function() {

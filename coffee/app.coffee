@@ -12,6 +12,16 @@ class app.AppController
     }
     app.entries = new app.EntriesCollection()
     @listen()
+    lastEntry = app.entries.getRecords().pop()
+    if lastEntry
+      lastDate = new Date(lastEntry.date).setHours(0,0,0,0)
+      now = new Date().setHours(0,0,0,0)
+      if now > lastEntry
+        app.views.input.show()
+      else
+        app.views.stats.show()
+    else
+      app.views.input.show()
     document.dispatchEvent new CustomEvent('app:loaded')
 
   listen: ->

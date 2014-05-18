@@ -23,7 +23,8 @@ html, body {
   padding: 16px; }
 
 #input, #stats {
-  -webkit-flex-shrink: 0; }
+  -webkit-flex-shrink: 0;
+  display: none; }
 
 #list {
   overflow: auto;
@@ -35,20 +36,18 @@ html, body {
   padding: 1em;
   height: 104px; }
 
-#stats {
-  display: none; }
-  #stats .percentages {
-    position: relative;
-    height: 1em;
-    margin: 1em; }
-  #stats .percentage {
-    height: 1em;
-    position: absolute;
-    top: 0; }
-  #stats .percentage-yes {
-    left: 0; }
-  #stats .percentage-no {
-    right: 0; }
+#stats .percentages {
+  position: relative;
+  height: 1em;
+  margin: 1em; }
+#stats .percentage {
+  height: 1em;
+  position: absolute;
+  top: 0; }
+#stats .percentage-yes {
+  left: 0; }
+#stats .percentage-no {
+  right: 0; }
 
 #history {
   margin-left: 1em;
@@ -105,10 +104,10 @@ h1 {
   background: url(bg.png); }
 
 #stats .percentage-yes {
-  background: #4cd964; }
+  background: #4cd964;
+  border-right: 1px solid black; }
 #stats .percentage-no {
-  background: #ff3b30;
-  border-left: 1px solid black; }
+  background: #ff3b30; }
 
 .button {
   cursor: pointer;

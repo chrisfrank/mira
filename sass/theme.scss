@@ -35,10 +35,10 @@ h1 {
 #stats {
   .percentage-yes {
     background: $green;
+    border-right: 1px solid black;
   }
   .percentage-no {
     background: $red;
-    border-left: 1px solid black;
   }
 }
 
