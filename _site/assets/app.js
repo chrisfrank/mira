@@ -352,8 +352,17 @@
     };
 
     StatsView.prototype.render = function(e) {
+      var noPct, yesPct;
       this.entries = e.detail.entries;
-      return this.el.innerHTML = this.entries.length;
+      this.yeas = this.entries.filter(function(entry) {
+        return entry.answer === 1;
+      });
+      this.nays = this.entries.filter(function(entry) {
+        return entry.answer === 0;
+      });
+      yesPct = Math.floor(this.yeas.length / this.entries.length * 100);
+      noPct = 100 - yesPct;
+      return this.el.innerHTML = "<div class='percentages'> <div class='percentage percentage-yes' style='width: " + yesPct + "%'></div> <div class='percentage percentage-no' style='width: " + noPct + "%'></div> </div>";
     };
 
     return StatsView;

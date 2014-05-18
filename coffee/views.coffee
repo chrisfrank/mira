@@ -101,6 +101,7 @@ class app.StatsView
     throw "Cannot construct view without an HTML element"  unless el?
     @el = el
     @events()
+
   events: ->
     document.addEventListener 'entry:create', @
     document.addEventListener 'entries:changed', @
@@ -114,5 +115,14 @@ class app.StatsView
 
   render: (e) ->
     @entries = e.detail.entries
-    @el.innerHTML = @entries.length
+    @yeas = @entries.filter (entry) -> entry.answer == 1
+    @nays = @entries.filter (entry) -> entry.answer == 0
+    yesPct = Math.floor(@yeas.length / @entries.length * 100)
+    noPct = 100 - yesPct
+    @el.innerHTML = "
+      <div class='percentages'>
+        <div class='percentage percentage-yes' style='width: #{yesPct}%'></div>
+        <div class='percentage percentage-no' style='width: #{noPct}%'></div>
+      </div>
+    "
 

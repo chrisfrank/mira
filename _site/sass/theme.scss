@@ -32,6 +32,16 @@ h1 {
   background: url(bg.png);
 }
 
+#stats {
+  .percentage-yes {
+    background: $green;
+  }
+  .percentage-no {
+    background: $red;
+    border-left: 1px solid black;
+  }
+}
+
 .button {
   cursor: pointer;
   border: 2px solid;

@@ -31,12 +31,24 @@ html, body {
   -webkit-flex-grow: 1;
   position: relative; }
 
-#input, #stats {
+#input {
   padding: 1em;
   height: 104px; }
 
 #stats {
   display: none; }
+  #stats .percentages {
+    position: relative;
+    height: 1em;
+    margin: 1em; }
+  #stats .percentage {
+    height: 1em;
+    position: absolute;
+    top: 0; }
+  #stats .percentage-yes {
+    left: 0; }
+  #stats .percentage-no {
+    right: 0; }
 
 #history {
   margin-left: 1em;
@@ -91,6 +103,12 @@ h1 {
 
 #history {
   background: url(bg.png); }
+
+#stats .percentage-yes {
+  background: #4cd964; }
+#stats .percentage-no {
+  background: #ff3b30;
+  border-left: 1px solid black; }
 
 .button {
   cursor: pointer;
