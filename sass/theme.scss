@@ -1,0 +1,51 @@
+$green: #4ad663;
+$red: #ff3056;
+$blue: #32aadc;
+$white: #e3e3e3;
+$black: #222;
+
+html, body {
+  font-family: 'avenir next', 'avenir', sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+h1 {
+  font-size: 1.5em;
+}
+
+#entry_view {
+  .prompt {
+    background: white;
+    &:after {
+      content: '';
+      display: block;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      border-bottom: 1px solid $white;
+      -webkit-transform: scaleY(0.5);
+    }
+  }
+  .button {
+    cursor: pointer;
+    &:after {
+      content: '';
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      height: 100%;
+      border-left: 1px solid $white;
+      -webkit-transform: scaleX(0.5);
+    }
+  }
+  .button-yes {
+    color: $green;
+  }
+  .button-no {
+    color: $red;
+  }
+}
+

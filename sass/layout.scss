@@ -1,0 +1,33 @@
+#app {
+  display: -webkit-flex;
+  -webkit-flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+#prompt {
+  background: white;
+  height: auto;
+  -webkit-flex-shrink: 0;
+  h1 {
+    padding: 1em;
+  }
+}
+
+#list {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  -webkit-flex-grow: 1;
+}
+
+#input, #stats {
+  padding: 1em;
+}
+
+#history {
+  .entry {
+    height: 44px;
+    width: 100%;
+  }
+}
+

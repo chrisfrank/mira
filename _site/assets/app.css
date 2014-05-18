@@ -1,0 +1,75 @@
+html, body {
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  line-height: 1.2;
+  text-align: center; }
+
+* {
+  margin: 0;
+  box-sizing: border-box;
+  -webkit-user-select: none; }
+
+#app {
+  display: -webkit-flex;
+  -webkit-flex-direction: column;
+  height: 100%;
+  overflow: hidden; }
+
+#prompt {
+  background: white;
+  height: auto;
+  -webkit-flex-shrink: 0; }
+  #prompt h1 {
+    padding: 1em; }
+
+#list {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  -webkit-flex-grow: 1; }
+
+#input, #stats {
+  padding: 1em; }
+
+#history .entry {
+  height: 44px;
+  width: 100%; }
+
+.card {
+  height: 100%; }
+
+html, body {
+  font-family: 'avenir next', 'avenir', sans-serif;
+  font-weight: bold;
+  font-size: 16px; }
+
+h1 {
+  font-size: 1.5em; }
+
+#entry_view .prompt {
+  background: white; }
+  #entry_view .prompt:after {
+    content: '';
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    border-bottom: 1px solid #e3e3e3;
+    -webkit-transform: scaleY(0.5); }
+#entry_view .button {
+  cursor: pointer; }
+  #entry_view .button:after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    height: 100%;
+    border-left: 1px solid #e3e3e3;
+    -webkit-transform: scaleX(0.5); }
+#entry_view .button-yes {
+  color: #4ad663; }
+#entry_view .button-no {
+  color: #ff3056; }

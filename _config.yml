@@ -1,0 +1,19 @@
+markdown: kramdown
+nav:
+  what:
+    label: '<em>What</em> We Do'
+    path: '/what'
+  how:
+    label: "<em>How</em> It's Going"
+    path: '/how'
+  where:
+    label: "<em>Where</em> It Happens"
+    path: '/where'
+  who:
+    label: "<em>Who</em> We Are"
+    path: '/who'
+  donate:
+    label: '<em>Donate</em> Now'
+    path: 'https://www.stayclassy.org/checkout/donation?eid=24774'
+
+
