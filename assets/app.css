@@ -22,13 +22,14 @@ html, body {
   -webkit-flex-shrink: 0;
   padding: 16px; }
 
-#input {
+#input, #stats {
   -webkit-flex-shrink: 0; }
 
 #list {
   overflow: auto;
   -webkit-overflow-scrolling: touch;
-  -webkit-flex-grow: 1; }
+  -webkit-flex-grow: 1;
+  position: relative; }
 
 #input, #stats {
   padding: 1em;
@@ -38,7 +39,12 @@ html, body {
   display: none; }
 
 #history {
-  margin-left: 1em; }
+  margin-left: 1em;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 101%; }
 
 .card {
   height: 100%; }
@@ -83,6 +89,9 @@ h1 {
 #input, #stats {
   border-bottom: 1px solid #383838; }
 
+#history {
+  background: url(bg.png); }
+
 .button {
   cursor: pointer;
   border: 2px solid;
@@ -103,6 +112,8 @@ h1 {
   border-bottom: 1px solid #383838;
   color: white;
   text-align: left; }
+  .entry:last-child {
+    border-bottom: none; }
 
 .entry_answer {
   text-align: center;

@@ -29,6 +29,7 @@ h1 {
 }
 
 #history {
+  background: url(bg.png);
 }
 
 .button {
@@ -56,6 +57,9 @@ h1 {
   border-bottom: 1px solid $black;
   color: white;
   text-align: left;
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .entry_answer {

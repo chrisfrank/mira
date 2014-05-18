@@ -58,7 +58,8 @@ class app.ScrollView extends app.View
   onTouchStart: (e) ->
     height = @el.getBoundingClientRect().height
     atTop = @el.scrollTop == 0
-    atBottom = @el.scrollHeight = - @el.scrollTop == height
+    atBottom = (@el.scrollHeight - @el.scrollTop == height)
+    console.log atBottom
     @el.scrollTop += 1 if atTop
     @el.scrollTop -=1 if atBottom
 

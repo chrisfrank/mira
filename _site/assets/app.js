@@ -256,7 +256,8 @@
       var atBottom, atTop, height;
       height = this.el.getBoundingClientRect().height;
       atTop = this.el.scrollTop === 0;
-      atBottom = this.el.scrollHeight = -this.el.scrollTop === height;
+      atBottom = this.el.scrollHeight - this.el.scrollTop === height;
+      console.log(atBottom);
       if (atTop) {
         this.el.scrollTop += 1;
       }
