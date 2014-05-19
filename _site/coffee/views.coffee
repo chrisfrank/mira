@@ -19,16 +19,64 @@ class app.PromptView extends app.View
   render: ->
     @el.innerHTML = "<h1>#{ app.prompt }</h1>"
 
-class app.InputView extends app.View
+class app.TogglingView extends app.View
   events: ->
-    document.addEventListener 'entry:create', @
-    document.addEventListener 'app:loaded', @
-    @el.addEventListener app.CLICK_EVENT, @
     @el.addEventListener 'touchmove', (e) -> e.preventDefault()
+    document.addEventListener 'entries:changed', @
+
+  handleEvent: (e) ->
+    @onEntryChange(e) if e.type == 'entries:changed'
+
+  onEntryChange: (e) ->
+    entries = e.detail.entries.slice(0)
+    lastEntry = entries.pop()
+    lastDate = new Date(lastEntry?.date).setHours(0,0,0,0) || 0
+    now = new Date().setHours(0,0,0,0)
+    @toggle(now, lastDate)
+
+  toggle: (now, previously) ->
+    if (now > previously) then @show() else @hide()
+
+  hide: ->
+    @el.style.opacity = '0'
+    @el.style.zIndex = 0
+    document.dispatchEvent new CustomEvent 'toggling_view:shown'
+
+  show: ->
+    @el.style.opacity = '1'
+    @el.style.zIndex = 1
+    document.dispatchEvent new CustomEvent 'toggling_view:shown'
+
+class app.StatsView extends app.TogglingView
+
+  handleEvent: (e) ->
+    @rerender(e) if e.type == 'entries:changed'
+    super
+
+  toggle: (now, previously) ->
+    if (now <= previously) then @show() else @hide()
+
+  rerender: (e) ->
+    @entries = e.detail.entries
+    @yeas = @entries.filter (entry) -> entry.answer == 1
+    @nays = @entries.filter (entry) -> entry.answer == 0
+    yesPct = Math.floor(@yeas.length / @entries.length * 100)
+    noPct = 100 - yesPct
+    @el.innerHTML = "
+      <div class='percentages'>
+        <div class='percentage percentage-yes' style='width: #{yesPct}%'></div>
+        <div class='percentage percentage-no' style='width: #{noPct}%'></div>
+      </div>
+    "
+
+class app.InputView extends app.TogglingView
+  events: ->
+    @el.addEventListener app.CLICK_EVENT, @
+    super
 
   handleEvent: (e) ->
     @newEntry(e) if e.type == app.CLICK_EVENT
-    @hide(e) if e.type == 'entry:create'
+    super
 
   newEntry: (e) ->
     target = e.target
@@ -38,12 +86,6 @@ class app.InputView extends app.View
         detail:
           answer: parseInt(val)
       })
-
-  hide: ->
-    @el.style.display = 'none'
-
-  show: ->
-    @el.style.display = 'block'
 
   render: ->
     @el.innerHTML = "
@@ -62,7 +104,6 @@ class app.ScrollView extends app.View
     height = @el.getBoundingClientRect().height
     atTop = @el.scrollTop == 0
     atBottom = (@el.scrollHeight - @el.scrollTop == height)
-    console.log atBottom
     @el.scrollTop += 1 if atTop
     @el.scrollTop -=1 if atBottom
 
@@ -73,9 +114,12 @@ class app.HistoryView extends app.View
 
   events: ->
     document.addEventListener 'entries:changed', @
+    document.addEventListener 'toggling_view:shown', @
+    document.addEventListener 'topview:height', @
 
   handleEvent: (e) ->
     @onEntryChange(e) if e.type == 'entries:changed'
+    @adjustHeight(e) if e.type == 'topview:height'
 
   onEntryChange: (event) ->
     @entries = event.detail.entries
@@ -99,35 +143,21 @@ class app.HistoryView extends app.View
     "
     @el.prependChild elem
 
-class app.StatsView
-  constructor: (el) ->
-    throw "Cannot construct view without an HTML element"  unless el?
-    @el = el
-    @events()
+  adjustHeight: (e) ->
+    offset = e.detail.height
+    @el.style.top = offset + 'px' if offset?
 
+
+class app.TopView extends app.View
   events: ->
-    document.addEventListener 'entry:create', @
-    document.addEventListener 'entries:changed', @
-
-  handleEvent: (e) ->
-    @show() if e.type == 'entry:create'
-    @render(e) if e.type == 'entries:changed'
-
-  hide: ->
-    @el.style.display = 'none'
-  show: ->
-    @el.style.display = 'block'
-
-  render: (e) ->
-    @entries = e.detail.entries
-    @yeas = @entries.filter (entry) -> entry.answer == 1
-    @nays = @entries.filter (entry) -> entry.answer == 0
-    yesPct = Math.floor(@yeas.length / @entries.length * 100)
-    noPct = 100 - yesPct
-    @el.innerHTML = "
-      <div class='percentages'>
-        <div class='percentage percentage-yes' style='width: #{yesPct}%'></div>
-        <div class='percentage percentage-no' style='width: #{noPct}%'></div>
-      </div>
-    "
+    document.addEventListener 'toggling_view:shown', @
+    window.addEventListener 'orientationchange', @
+  handleEvent: () ->
+    @sendHeight()
+  sendHeight: (e) ->
+    console.log @el.getBoundingClientRect()
+    document.dispatchEvent new CustomEvent('topview:height', {
+      detail:
+        height: @el.offsetHeight
+    })
 

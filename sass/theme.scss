@@ -22,17 +22,27 @@ h1 {
 
 #prompt {
   border-bottom: 1px solid $black;
+  background: rgba(0,0,0,.75);
+}
+
+#top {
+  background: rgba(0,0,0,.75);
 }
 
 #input, #stats {
   border-bottom: 1px solid $black;
+  -webkit-transition: opacity .3s;
 }
 
 #history {
   background: url(bg.png);
+  background-size: 1px 64px;
 }
 
 #stats {
+  background: rgba(56,56,56,.9);
+  .percentage {
+  }
   .percentage-yes {
     background: $green;
     border-right: 1px solid black;
@@ -64,11 +74,20 @@ h1 {
 }
 
 .entry {
-  border-bottom: 1px solid $black;
   color: white;
   text-align: left;
+  position: relative;
   &:last-child {
     border-bottom: none;
+  }
+  &:after {
+    content: '';
+    display: block;
+    position: absolute;
+    bottom: 0;
+    height: 1px;
+    background: $black;
+    -webkit-transform: scaleY(0.5);
   }
 }
 

@@ -1,42 +1,46 @@
 #app {
-  display: -webkit-flex;
-  -webkit-flex-direction: column;
+  display: block;
   height: 100%;
   overflow: hidden;
 }
 
+#top {
+  position: relative;
+  z-index: 2;
+}
 #prompt {
-  -webkit-flex-shrink: 0;
   padding: 16px;
+  position: relative;
+}
+
+#meta {
+  position: relative;
+  height: 105px;
 }
 
 #input, #stats {
-  -webkit-flex-shrink: 0;
-  display: none;
-}
-
-#list {
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-  -webkit-flex-grow: 1;
-  position: relative;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 #input {
   padding: 1em;
-  height: 104px;
 }
 
 #stats {
   .percentages {
     position: relative;
-    height: 1em;
-    margin: 1em;
+    height: 100%;
   }
   .percentage {
-    height: 1em;
+    height: 1px;
     position: absolute;
-    top: 0;
+    top: 52px;
+    min-width: 1px;
   }
   .percentage-yes {
     left: 0;
@@ -46,12 +50,23 @@
   }
 }
 
-#history {
-  margin-left: 1em;
+#list {
+  overflow: scroll;
+  -webkit-overflow-scrolling: touch;
   position: absolute;
   top: 0;
   left: 0;
+  bottom:0;
+  width: 100%;
+  z-index: 1;
+}
+
+#history {
+  margin-left: 1em;
+  position: absolute;
+  left: 0;
   right: 0;
-  height: 101%;
+  bottom: -2px;
+  padding-bottom: 2px;
 }
 

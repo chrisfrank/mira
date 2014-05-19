@@ -13,49 +13,63 @@ html, body {
   -webkit-user-select: none; }
 
 #app {
-  display: -webkit-flex;
-  -webkit-flex-direction: column;
+  display: block;
   height: 100%;
   overflow: hidden; }
 
+#top {
+  position: relative;
+  z-index: 2; }
+
 #prompt {
-  -webkit-flex-shrink: 0;
-  padding: 16px; }
-
-#input, #stats {
-  -webkit-flex-shrink: 0;
-  display: none; }
-
-#list {
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-  -webkit-flex-grow: 1;
+  padding: 16px;
   position: relative; }
 
+#meta {
+  position: relative;
+  height: 105px; }
+
+#input, #stats {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%; }
+
 #input {
-  padding: 1em;
-  height: 104px; }
+  padding: 1em; }
 
 #stats .percentages {
   position: relative;
-  height: 1em;
-  margin: 1em; }
+  height: 100%; }
 #stats .percentage {
-  height: 1em;
+  height: 1px;
   position: absolute;
-  top: 0; }
+  top: 52px;
+  min-width: 1px; }
 #stats .percentage-yes {
   left: 0; }
 #stats .percentage-no {
   right: 0; }
 
-#history {
-  margin-left: 1em;
+#list {
+  overflow: scroll;
+  -webkit-overflow-scrolling: touch;
   position: absolute;
   top: 0;
   left: 0;
+  bottom: 0;
+  width: 100%;
+  z-index: 1; }
+
+#history {
+  margin-left: 1em;
+  position: absolute;
+  left: 0;
   right: 0;
-  height: 101%; }
+  bottom: -2px;
+  padding-bottom: 2px; }
 
 .card {
   height: 100%; }
@@ -95,19 +109,27 @@ h1 {
   font-weight: 300; }
 
 #prompt {
-  border-bottom: 1px solid #383838; }
+  border-bottom: 1px solid #383838;
+  background: rgba(0, 0, 0, 0.75); }
+
+#top {
+  background: rgba(0, 0, 0, 0.75); }
 
 #input, #stats {
-  border-bottom: 1px solid #383838; }
+  border-bottom: 1px solid #383838;
+  -webkit-transition: opacity .3s; }
 
 #history {
-  background: url(bg.png); }
+  background: url(bg.png);
+  background-size: 1px 64px; }
 
-#stats .percentage-yes {
-  background: #4cd964;
-  border-right: 1px solid black; }
-#stats .percentage-no {
-  background: #ff3b30; }
+#stats {
+  background: rgba(56, 56, 56, 0.9); }
+  #stats .percentage-yes {
+    background: #4cd964;
+    border-right: 1px solid black; }
+  #stats .percentage-no {
+    background: #ff3b30; }
 
 .button {
   cursor: pointer;
@@ -126,11 +148,19 @@ h1 {
     background-color: #ff3b30; }
 
 .entry {
-  border-bottom: 1px solid #383838;
   color: white;
-  text-align: left; }
+  text-align: left;
+  position: relative; }
   .entry:last-child {
     border-bottom: none; }
+  .entry:after {
+    content: '';
+    display: block;
+    position: absolute;
+    bottom: 0;
+    height: 1px;
+    background: #383838;
+    -webkit-transform: scaleY(0.5); }
 
 .entry_answer {
   text-align: center;

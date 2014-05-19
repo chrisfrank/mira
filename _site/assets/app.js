@@ -5,10 +5,10 @@
 
   app.AppController = (function() {
     function AppController() {
-      var lastDate, lastEntry, now;
       document.dispatchEvent(new CustomEvent('app:starting'));
       app.prompt = "Did you need to be in New York City today?";
       app.views = {
+        top: new app.TopView(document.getElementById('top')),
         prompt: new app.PromptView(document.getElementById('prompt')),
         scroller: new app.ScrollView(document.getElementById('list')),
         input: new app.InputView(document.getElementById('input')),
@@ -17,18 +17,6 @@
       };
       app.entries = new app.EntriesCollection();
       this.listen();
-      lastEntry = app.entries.getRecords().pop();
-      if (lastEntry) {
-        lastDate = new Date(lastEntry.date).setHours(0, 0, 0, 0);
-        now = new Date().setHours(0, 0, 0, 0);
-        if (now > lastEntry) {
-          app.views.input.show();
-        } else {
-          app.views.stats.show();
-        }
-      } else {
-        app.views.input.show();
-      }
       document.dispatchEvent(new CustomEvent('app:loaded'));
     }
 
@@ -199,6 +187,99 @@
 
   })(app.View);
 
+  app.TogglingView = (function(_super) {
+    __extends(TogglingView, _super);
+
+    function TogglingView() {
+      return TogglingView.__super__.constructor.apply(this, arguments);
+    }
+
+    TogglingView.prototype.events = function() {
+      this.el.addEventListener('touchmove', function(e) {
+        return e.preventDefault();
+      });
+      return document.addEventListener('entries:changed', this);
+    };
+
+    TogglingView.prototype.handleEvent = function(e) {
+      if (e.type === 'entries:changed') {
+        return this.onEntryChange(e);
+      }
+    };
+
+    TogglingView.prototype.onEntryChange = function(e) {
+      var entries, lastDate, lastEntry, now;
+      entries = e.detail.entries.slice(0);
+      lastEntry = entries.pop();
+      lastDate = new Date(lastEntry != null ? lastEntry.date : void 0).setHours(0, 0, 0, 0) || 0;
+      now = new Date().setHours(0, 0, 0, 0);
+      return this.toggle(now, lastDate);
+    };
+
+    TogglingView.prototype.toggle = function(now, previously) {
+      if (now > previously) {
+        return this.show();
+      } else {
+        return this.hide();
+      }
+    };
+
+    TogglingView.prototype.hide = function() {
+      this.el.style.opacity = '0';
+      this.el.style.zIndex = 0;
+      return document.dispatchEvent(new CustomEvent('toggling_view:shown'));
+    };
+
+    TogglingView.prototype.show = function() {
+      this.el.style.opacity = '1';
+      this.el.style.zIndex = 1;
+      return document.dispatchEvent(new CustomEvent('toggling_view:shown'));
+    };
+
+    return TogglingView;
+
+  })(app.View);
+
+  app.StatsView = (function(_super) {
+    __extends(StatsView, _super);
+
+    function StatsView() {
+      return StatsView.__super__.constructor.apply(this, arguments);
+    }
+
+    StatsView.prototype.handleEvent = function(e) {
+      if (e.type === 'entries:changed') {
+        this.rerender(e);
+      }
+      return StatsView.__super__.handleEvent.apply(this, arguments);
+    };
+
+    StatsView.prototype.toggle = function(now, previously) {
+      if (now <= previously) {
+        return this.show();
+      } else {
+        return this.hide();
+      }
+    };
+
+    StatsView.prototype.rerender = function(e) {
+      var noPct, yesPct;
+      this.entries = e.detail.entries;
+      this.yeas = this.entries.filter(function(entry) {
+        return entry.answer === 1;
+      });
+      this.nays = this.entries.filter(function(entry) {
+        return entry.answer === 0;
+      });
+      yesPct = Math.floor(this.yeas.length / this.entries.length * 100);
+      noPct = 100 - yesPct;
+      return this.el.innerHTML = "<div class='percentages'> <div class='percentage percentage-yes' style='width: " + yesPct + "%'></div> <div class='percentage percentage-no' style='width: " + noPct + "%'></div> </div>";
+    };
+
+    return StatsView;
+
+  })(app.TogglingView);
+
   app.InputView = (function(_super) {
     __extends(InputView, _super);
 
@@ -207,21 +288,15 @@
     }
 
     InputView.prototype.events = function() {
-      document.addEventListener('entry:create', this);
-      document.addEventListener('app:loaded', this);
       this.el.addEventListener(app.CLICK_EVENT, this);
-      return this.el.addEventListener('touchmove', function(e) {
-        return e.preventDefault();
-      });
+      return InputView.__super__.events.apply(this, arguments);
     };
 
     InputView.prototype.handleEvent = function(e) {
       if (e.type === app.CLICK_EVENT) {
         this.newEntry(e);
       }
-      if (e.type === 'entry:create') {
-        return this.hide(e);
-      }
+      return InputView.__super__.handleEvent.apply(this, arguments);
     };
 
     InputView.prototype.newEntry = function(e) {
@@ -237,21 +312,13 @@
       }
     };
 
-    InputView.prototype.hide = function() {
-      return this.el.style.display = 'none';
-    };
-
-    InputView.prototype.show = function() {
-      return this.el.style.display = 'block';
-    };
-
     InputView.prototype.render = function() {
       return this.el.innerHTML = "<div data-val=1 class='button button-yes'>Yes</div> <div data-val=0 class='button button-no'>No</div>";
     };
 
     return InputView;
 
-  })(app.View);
+  })(app.TogglingView);
 
   app.ScrollView = (function(_super) {
     __extends(ScrollView, _super);
@@ -275,7 +342,6 @@
       height = this.el.getBoundingClientRect().height;
       atTop = this.el.scrollTop === 0;
       atBottom = this.el.scrollHeight - this.el.scrollTop === height;
-      console.log(atBottom);
       if (atTop) {
         this.el.scrollTop += 1;
       }
@@ -300,12 +366,17 @@
     };
 
     HistoryView.prototype.events = function() {
-      return document.addEventListener('entries:changed', this);
+      document.addEventListener('entries:changed', this);
+      document.addEventListener('toggling_view:shown', this);
+      return document.addEventListener('topview:height', this);
     };
 
     HistoryView.prototype.handleEvent = function(e) {
       if (e.type === 'entries:changed') {
-        return this.onEntryChange(e);
+        this.onEntryChange(e);
+      }
+      if (e.type === 'topview:height') {
+        return this.adjustHeight(e);
       }
     };
 
@@ -338,57 +409,45 @@
       return this.el.prependChild(elem);
     };
 
+    HistoryView.prototype.adjustHeight = function(e) {
+      var offset;
+      offset = e.detail.height;
+      if (offset != null) {
+        return this.el.style.top = offset + 'px';
+      }
+    };
+
     return HistoryView;
 
   })(app.View);
 
-  app.StatsView = (function() {
-    function StatsView(el) {
-      if (el == null) {
-        throw "Cannot construct view without an HTML element";
-      }
-      this.el = el;
-      this.events();
+  app.TopView = (function(_super) {
+    __extends(TopView, _super);
+
+    function TopView() {
+      return TopView.__super__.constructor.apply(this, arguments);
     }
 
-    StatsView.prototype.events = function() {
-      document.addEventListener('entry:create', this);
-      return document.addEventListener('entries:changed', this);
+    TopView.prototype.events = function() {
+      document.addEventListener('toggling_view:shown', this);
+      return window.addEventListener('orientationchange', this);
     };
 
-    StatsView.prototype.handleEvent = function(e) {
-      if (e.type === 'entry:create') {
-        this.show();
-      }
-      if (e.type === 'entries:changed') {
-        return this.render(e);
-      }
+    TopView.prototype.handleEvent = function() {
+      return this.sendHeight();
     };
 
-    StatsView.prototype.hide = function() {
-      return this.el.style.display = 'none';
+    TopView.prototype.sendHeight = function(e) {
+      console.log(this.el.getBoundingClientRect());
+      return document.dispatchEvent(new CustomEvent('topview:height', {
+        detail: {
+          height: this.el.offsetHeight
+        }
+      }));
     };
 
-    StatsView.prototype.show = function() {
-      return this.el.style.display = 'block';
-    };
+    return TopView;
 
-    StatsView.prototype.render = function(e) {
-      var noPct, yesPct;
-      this.entries = e.detail.entries;
-      this.yeas = this.entries.filter(function(entry) {
-        return entry.answer === 1;
-      });
-      this.nays = this.entries.filter(function(entry) {
-        return entry.answer === 0;
-      });
-      yesPct = Math.floor(this.yeas.length / this.entries.length * 100);
-      noPct = 100 - yesPct;
-      return this.el.innerHTML = "<div class='percentages'> <div class='percentage percentage-yes' style='width: " + yesPct + "%'></div> <div class='percentage percentage-no' style='width: " + noPct + "%'></div> </div>";
-    };
-
-    return StatsView;
-
-  })();
+  })(app.View);
 
 }).call(this);
