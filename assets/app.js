@@ -43,8 +43,8 @@
 
     EntriesCollection.prototype.restore = function() {
       this.records = [];
-      if (localStorage["dailyq:entries"] != null) {
-        this.records = JSON.parse(localStorage["dailyq:entries"]).map(function(entry) {
+      if (localStorage["mira:entries"] != null) {
+        this.records = JSON.parse(localStorage["mira:entries"]).map(function(entry) {
           return new app.Entry(entry);
         });
       }
@@ -53,7 +53,7 @@
     };
 
     EntriesCollection.prototype.save = function() {
-      localStorage["dailyq:entries"] = JSON.stringify(this.records);
+      localStorage["mira:entries"] = JSON.stringify(this.records);
       this.broadcastChange();
       return this.records;
     };
@@ -68,12 +68,9 @@
     };
 
     EntriesCollection.prototype.reset = function() {
-      if (confirm('Are you sure you want to permanently delete all entries?')) {
-        this.records = [];
-        return this.save();
-      } else {
-
-      }
+      this.records = [];
+      document.dispatchEvent(new CustomEvent('entries:reset'));
+      return this.save();
     };
 
     EntriesCollection.prototype.seed = function() {
@@ -82,7 +79,8 @@
       _results = [];
       while (i < 20) {
         this.add(new app.Entry({
-          answer: i % 2
+          answer: i % 2,
+          date: new Date(1987, 0, i)
         }));
         _results.push(i += 1);
       }
@@ -289,6 +287,7 @@
 
     InputView.prototype.events = function() {
       this.el.addEventListener(app.CLICK_EVENT, this);
+      this.el.addEventListener('touchcancel', this);
       return InputView.__super__.events.apply(this, arguments);
     };
 
@@ -367,17 +366,28 @@
 
     HistoryView.prototype.events = function() {
       document.addEventListener('entries:changed', this);
-      document.addEventListener('toggling_view:shown', this);
-      return document.addEventListener('topview:height', this);
+      document.addEventListener('entries:reset', this);
+      document.addEventListener('topview:height', this);
+      return document.addEventListener('app:loaded', this);
     };
 
     HistoryView.prototype.handleEvent = function(e) {
       if (e.type === 'entries:changed') {
         this.onEntryChange(e);
       }
-      if (e.type === 'topview:height') {
-        return this.adjustHeight(e);
+      if (e.type === 'entries:reset') {
+        this.onEntryReset(e);
       }
+      if (e.type === 'topview:height') {
+        this.adjustHeight(e);
+      }
+      if (e.type === 'app:loaded') {
+        return this.enableAnimation();
+      }
+    };
+
+    HistoryView.prototype.enableAnimation = function() {
+      return this.animate = true;
     };
 
     HistoryView.prototype.onEntryChange = function(event) {
@@ -385,9 +395,12 @@
       return this.render();
     };
 
+    HistoryView.prototype.onEntryReset = function() {
+      return this.el.innerHTML = '';
+    };
+
     HistoryView.prototype.render = function() {
       var entry, _i, _len, _ref, _results;
-      this.el.innerHTML = '';
       if (this.entries != null) {
         _ref = this.entries;
         _results = [];
@@ -400,7 +413,11 @@
     };
 
     HistoryView.prototype.renderEntry = function(entry) {
-      var date, elem;
+      var date, elem, exists;
+      exists = document.getElementById("entry_" + entry.date);
+      if (exists != null) {
+        return;
+      }
       date = new Date(entry.date);
       elem = document.createElement('div');
       elem.className = "entry entry-" + entry.answer;
@@ -438,7 +455,6 @@
     };
 
     TopView.prototype.sendHeight = function(e) {
-      console.log(this.el.getBoundingClientRect());
       return document.dispatchEvent(new CustomEvent('topview:height', {
         detail: {
           height: this.el.offsetHeight

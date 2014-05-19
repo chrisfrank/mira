@@ -4,14 +4,14 @@ class app.EntriesCollection
 
   restore: ->
     @records = []
-    if localStorage["dailyq:entries"]?
-      @records = JSON.parse(localStorage["dailyq:entries"]).map (entry) ->
+    if localStorage["mira:entries"]?
+      @records = JSON.parse(localStorage["mira:entries"]).map (entry) ->
         new app.Entry(entry)
     @broadcastChange()
     @records
 
   save: ->
-    localStorage["dailyq:entries"] = JSON.stringify @records
+    localStorage["mira:entries"] = JSON.stringify @records
     @broadcastChange()
     @records
 
@@ -22,16 +22,17 @@ class app.EntriesCollection
   getRecords: -> @records
 
   reset: ->
-    if (confirm('Are you sure you want to permanently delete all entries?'))
-      @records = []
-      @save()
-    else
-      return
+    @records = []
+    document.dispatchEvent new CustomEvent('entries:reset')
+    @save()
 
   seed: ->
     i = 0
     while (i < 20)
-      @add new app.Entry({answer: i%2})
+      @add new app.Entry({
+        answer: i%2
+        date: new Date(1987,0,i)
+      })
       i += 1
 
   broadcastChange: ->

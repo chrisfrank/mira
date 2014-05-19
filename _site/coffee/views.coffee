@@ -72,6 +72,7 @@ class app.StatsView extends app.TogglingView
 class app.InputView extends app.TogglingView
   events: ->
     @el.addEventListener app.CLICK_EVENT, @
+    @el.addEventListener 'touchcancel', @
     super
 
   handleEvent: (e) ->
@@ -114,23 +115,33 @@ class app.HistoryView extends app.View
 
   events: ->
     document.addEventListener 'entries:changed', @
-    document.addEventListener 'toggling_view:shown', @
+    document.addEventListener 'entries:reset', @
     document.addEventListener 'topview:height', @
+    document.addEventListener 'app:loaded', @
 
   handleEvent: (e) ->
     @onEntryChange(e) if e.type == 'entries:changed'
+    @onEntryReset(e) if e.type == 'entries:reset'
     @adjustHeight(e) if e.type == 'topview:height'
+    @enableAnimation() if e.type == 'app:loaded'
+
+  enableAnimation: ->
+    @animate = true
 
   onEntryChange: (event) ->
     @entries = event.detail.entries
     @render()
 
-  render: ->
+  onEntryReset: ->
     @el.innerHTML = ''
+
+  render: ->
     if @entries?
       @renderEntry(entry) for entry in @entries
 
   renderEntry: (entry) ->
+    exists = document.getElementById "entry_#{entry.date}"
+    return if exists?
     date = new Date(entry.date)
     elem = document.createElement 'div'
     elem.className = "entry entry-#{ entry.answer }"
@@ -142,6 +153,7 @@ class app.HistoryView extends app.View
       <div class='entry_answer'></div>
     "
     @el.prependChild elem
+
 
   adjustHeight: (e) ->
     offset = e.detail.height
@@ -155,7 +167,6 @@ class app.TopView extends app.View
   handleEvent: () ->
     @sendHeight()
   sendHeight: (e) ->
-    console.log @el.getBoundingClientRect()
     document.dispatchEvent new CustomEvent('topview:height', {
       detail:
         height: @el.offsetHeight
