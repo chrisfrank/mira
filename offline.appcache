@@ -1,0 +1,10 @@
+---
+---
+CACHE MANIFEST
+# rev {{ site.time | date_to_xmlschema }}
+index.html
+assets/app.js
+assets/app.css
+assets/bg.png
+assets/apple-touch-icon-120x120.png
+assets/apple-touch-startup-image-640x1096.png
