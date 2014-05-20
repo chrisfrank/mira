@@ -19,7 +19,7 @@ class app.EntriesCollection
     @records.push (entry)
     @save()
 
-  getRecords: -> @records
+  getRecords: -> @records.slice(0)
 
   reset: ->
     @records = []
@@ -38,5 +38,5 @@ class app.EntriesCollection
   broadcastChange: ->
     document.dispatchEvent new CustomEvent('entries:changed', {
       detail:
-        entries: @getRecords()
+        collection: @
     })

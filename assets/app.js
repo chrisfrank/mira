@@ -64,7 +64,7 @@
     };
 
     EntriesCollection.prototype.getRecords = function() {
-      return this.records;
+      return this.records.slice(0);
     };
 
     EntriesCollection.prototype.reset = function() {
@@ -90,7 +90,7 @@
     EntriesCollection.prototype.broadcastChange = function() {
       return document.dispatchEvent(new CustomEvent('entries:changed', {
         detail: {
-          entries: this.getRecords()
+          collection: this
         }
       }));
     };
@@ -207,7 +207,7 @@
 
     TogglingView.prototype.onEntryChange = function(e) {
       var entries, lastDate, lastEntry, now;
-      entries = e.detail.entries.slice(0);
+      entries = e.detail.collection.getRecords();
       lastEntry = entries.pop();
       lastDate = new Date(lastEntry != null ? lastEntry.date : void 0).setHours(0, 0, 0, 0) || 0;
       now = new Date().setHours(0, 0, 0, 0);
@@ -261,15 +261,15 @@
     };
 
     StatsView.prototype.rerender = function(e) {
-      var noPct, yesPct;
-      this.entries = e.detail.entries;
-      this.yeas = this.entries.filter(function(entry) {
+      var entries, noPct, yesPct;
+      entries = e.detail.collection.getRecords();
+      this.yeas = entries.filter(function(entry) {
         return entry.answer === 1;
       });
-      this.nays = this.entries.filter(function(entry) {
+      this.nays = entries.filter(function(entry) {
         return entry.answer === 0;
       });
-      yesPct = Math.floor(this.yeas.length / this.entries.length * 100);
+      yesPct = Math.floor(this.yeas.length / entries.length * 100);
       noPct = 100 - yesPct;
       return this.el.innerHTML = "<div class='percentages'> <div class='percentage percentage-yes' style='width: " + yesPct + "%'></div> <div class='percentage percentage-no' style='width: " + noPct + "%'></div> </div>";
     };
@@ -361,12 +361,12 @@
     }
 
     HistoryView.prototype.initialize = function() {
+      this.fragment = document.createDocumentFragment();
       return this.months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     };
 
     HistoryView.prototype.events = function() {
       document.addEventListener('entries:changed', this);
-      document.addEventListener('entries:reset', this);
       document.addEventListener('topview:height', this);
       return document.addEventListener('app:loaded', this);
     };
@@ -374,9 +374,6 @@
     HistoryView.prototype.handleEvent = function(e) {
       if (e.type === 'entries:changed') {
         this.onEntryChange(e);
-      }
-      if (e.type === 'entries:reset') {
-        this.onEntryReset(e);
       }
       if (e.type === 'topview:height') {
         this.adjustHeight(e);
@@ -391,39 +388,31 @@
     };
 
     HistoryView.prototype.onEntryChange = function(event) {
-      this.entries = event.detail.entries;
+      this.entries = event.detail.collection.getRecords();
       return this.render();
     };
 
-    HistoryView.prototype.onEntryReset = function() {
-      return this.el.innerHTML = '';
-    };
-
     HistoryView.prototype.render = function() {
-      var entry, _i, _len, _ref, _results;
+      var entry, _i, _len, _ref;
+      this.el.innerHTML = '';
       if (this.entries != null) {
-        _ref = this.entries;
-        _results = [];
+        _ref = this.entries.reverse();
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           entry = _ref[_i];
-          _results.push(this.renderEntry(entry));
+          this.renderEntry(entry);
         }
-        return _results;
       }
+      return this.el.appendChild(this.fragment);
     };
 
     HistoryView.prototype.renderEntry = function(entry) {
-      var date, elem, exists;
-      exists = document.getElementById("entry_" + entry.date);
-      if (exists != null) {
-        return;
-      }
+      var date, elem;
       date = new Date(entry.date);
       elem = document.createElement('div');
       elem.className = "entry entry-" + entry.answer;
       elem.id = "entry_" + entry.date;
       elem.innerHTML = "<div class='entry_date'> " + this.months[date.getMonth()] + " " + (date.getDate()) + " </div> <div class='entry_answer'></div>";
-      return this.el.prependChild(elem);
+      return this.fragment.appendChild(elem);
     };
 
     HistoryView.prototype.adjustHeight = function(e) {

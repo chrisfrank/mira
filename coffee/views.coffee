@@ -28,7 +28,7 @@ class app.TogglingView extends app.View
     @onEntryChange(e) if e.type == 'entries:changed'
 
   onEntryChange: (e) ->
-    entries = e.detail.entries.slice(0)
+    entries = e.detail.collection.getRecords()
     lastEntry = entries.pop()
     lastDate = new Date(lastEntry?.date).setHours(0,0,0,0) || 0
     now = new Date().setHours(0,0,0,0)
@@ -57,10 +57,10 @@ class app.StatsView extends app.TogglingView
     if (now <= previously) then @show() else @hide()
 
   rerender: (e) ->
-    @entries = e.detail.entries
-    @yeas = @entries.filter (entry) -> entry.answer == 1
-    @nays = @entries.filter (entry) -> entry.answer == 0
-    yesPct = Math.floor(@yeas.length / @entries.length * 100)
+    entries = e.detail.collection.getRecords()
+    @yeas = entries.filter (entry) -> entry.answer == 1
+    @nays = entries.filter (entry) -> entry.answer == 0
+    yesPct = Math.floor(@yeas.length / entries.length * 100)
     noPct = 100 - yesPct
     @el.innerHTML = "
       <div class='percentages'>
@@ -111,17 +111,16 @@ class app.ScrollView extends app.View
 
 class app.HistoryView extends app.View
   initialize: ->
+    @fragment = document.createDocumentFragment()
     @months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
   events: ->
     document.addEventListener 'entries:changed', @
-    document.addEventListener 'entries:reset', @
     document.addEventListener 'topview:height', @
     document.addEventListener 'app:loaded', @
 
   handleEvent: (e) ->
     @onEntryChange(e) if e.type == 'entries:changed'
-    @onEntryReset(e) if e.type == 'entries:reset'
     @adjustHeight(e) if e.type == 'topview:height'
     @enableAnimation() if e.type == 'app:loaded'
 
@@ -129,19 +128,16 @@ class app.HistoryView extends app.View
     @animate = true
 
   onEntryChange: (event) ->
-    @entries = event.detail.entries
+    @entries = event.detail.collection.getRecords()
     @render()
 
-  onEntryReset: ->
-    @el.innerHTML = ''
-
   render: ->
+    @el.innerHTML = ''
     if @entries?
-      @renderEntry(entry) for entry in @entries
+      @renderEntry(entry) for entry in @entries.reverse()
+    @el.appendChild @fragment
 
   renderEntry: (entry) ->
-    exists = document.getElementById "entry_#{entry.date}"
-    return if exists?
     date = new Date(entry.date)
     elem = document.createElement 'div'
     elem.className = "entry entry-#{ entry.answer }"
@@ -152,7 +148,7 @@ class app.HistoryView extends app.View
       </div>
       <div class='entry_answer'></div>
     "
-    @el.prependChild elem
+    @fragment.appendChild elem
 
 
   adjustHeight: (e) ->
