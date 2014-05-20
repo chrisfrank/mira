@@ -431,10 +431,10 @@
       this.el.style.webkitTransform = 'translate3d(0,-64px,0)';
       return setTimeout((function(_this) {
         return function() {
-          _this.el.style.webkitTransition = '-webkit-transform 1s';
+          _this.el.style.webkitTransition = '-webkit-transform .5s';
           _this.el.style.webkitTransform = 'translate3d(0,0,0)';
           return _this.el.addEventListener('webkitTransitionEnd', function(e) {
-            _this.el.style.webkitTransition = 'none';
+            _this.el.style.webkitTransition = _this.el.style.webkitTransform = null;
             return _this.el.removeEventListener('webkitTransitionEnd', arguments.callee);
           });
         };

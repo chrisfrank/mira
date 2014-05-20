@@ -159,10 +159,10 @@ class app.HistoryView extends app.View
     @el.style.webkitTransition = 'none'
     @el.style.webkitTransform = 'translate3d(0,-64px,0)'
     setTimeout () =>
-      @el.style.webkitTransition = '-webkit-transform 1s'
+      @el.style.webkitTransition = '-webkit-transform .5s'
       @el.style.webkitTransform = 'translate3d(0,0,0)'
       @el.addEventListener 'webkitTransitionEnd', (e) =>
-        @el.style.webkitTransition = 'none'
+        @el.style.webkitTransition = @el.style.webkitTransform = null
         @el.removeEventListener 'webkitTransitionEnd', arguments.callee
     , 1
 
