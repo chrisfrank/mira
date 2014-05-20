@@ -1,6 +1,13 @@
 class app.EntriesCollection
   constructor: ->
     @restore()
+    @events()
+
+  events: ->
+    document.addEventListener 'entry:undo', @
+
+  handleEvent: (e) ->
+    @pop() if e.type == 'entry:undo'
 
   restore: ->
     @records = []
@@ -12,12 +19,26 @@ class app.EntriesCollection
 
   save: ->
     localStorage["mira:entries"] = JSON.stringify @records
-    @broadcastChange()
     @records
 
   add: (entry) ->
     @records.push (entry)
+    document.dispatchEvent new CustomEvent('entry:added', {
+      detail:
+        collection: @
+        entry: entry
+    })
     @save()
+
+  pop: ->
+    entry = @records.pop()
+    @save()
+    document.dispatchEvent new CustomEvent('entry:removed', {
+      detail:
+        collection: @
+        entry: entry
+    })
+    entry
 
   getRecords: -> @records.slice(0)
 
@@ -25,6 +46,7 @@ class app.EntriesCollection
     @records = []
     document.dispatchEvent new CustomEvent('entries:reset')
     @save()
+    @broadcastChange()
 
   seed: ->
     i = 0

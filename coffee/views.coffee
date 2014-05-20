@@ -23,16 +23,19 @@ class app.TogglingView extends app.View
   events: ->
     @el.addEventListener 'touchmove', (e) -> e.preventDefault()
     document.addEventListener 'entries:changed', @
+    document.addEventListener 'entry:added', @
+    document.addEventListener 'entry:removed', @
 
   handleEvent: (e) ->
-    @onEntryChange(e) if e.type == 'entries:changed'
+    @onEntryChange(e)
 
   onEntryChange: (e) ->
-    entries = e.detail.collection.getRecords()
-    lastEntry = entries.pop()
-    lastDate = new Date(lastEntry?.date).setHours(0,0,0,0) || 0
-    now = new Date().setHours(0,0,0,0)
-    @toggle(now, lastDate)
+    entries = e.detail.collection?.getRecords()
+    if entries?
+      lastEntry = entries.pop()
+      lastDate = new Date(lastEntry?.date).setHours(0,0,0,0) || 0
+      now = new Date().setHours(0,0,0,0)
+      @toggle(now, lastDate)
 
   toggle: (now, previously) ->
     if (now > previously) then @show() else @hide()
@@ -50,7 +53,7 @@ class app.TogglingView extends app.View
 class app.StatsView extends app.TogglingView
 
   handleEvent: (e) ->
-    @rerender(e) if e.type == 'entries:changed'
+    @rerender(e) if e.type == 'entries:changed' || e.type == 'entry:added'
     super
 
   toggle: (now, previously) ->
@@ -72,7 +75,6 @@ class app.StatsView extends app.TogglingView
 class app.InputView extends app.TogglingView
   events: ->
     @el.addEventListener app.CLICK_EVENT, @
-    @el.addEventListener 'touchcancel', @
     super
 
   handleEvent: (e) ->
@@ -116,27 +118,26 @@ class app.HistoryView extends app.View
 
   events: ->
     document.addEventListener 'entries:changed', @
+    document.addEventListener 'entry:added', @
+    document.addEventListener 'entry:removed', @
     document.addEventListener 'topview:height', @
-    document.addEventListener 'app:loaded', @
 
   handleEvent: (e) ->
     @onEntryChange(e) if e.type == 'entries:changed'
     @adjustHeight(e) if e.type == 'topview:height'
-    @enableAnimation() if e.type == 'app:loaded'
-
-  enableAnimation: ->
-    @animate = true
+    @addEntry(e) if e.type == 'entry:added'
+    @removeEntry(e) if e.type == 'entry:removed'
 
   onEntryChange: (event) ->
     @entries = event.detail.collection.getRecords()
     @render()
 
   render: ->
+    @fragment = document.createDocumentFragment()
     @el.innerHTML = ''
     if @entries?
       @renderEntry(entry) for entry in @entries.reverse()
     @el.appendChild @fragment
-    @slideDown() if @animate
 
   renderEntry: (entry) ->
     date = new Date(entry.date)
@@ -155,15 +156,32 @@ class app.HistoryView extends app.View
     offset = e.detail.height
     @el.style.top = offset + 'px' if offset?
 
-  slideDown: ->
+  addEntry: (e) ->
+    entry = e.detail.entry
+    @fragment = document.createDocumentFragment()
+    @renderEntry(entry)
+    @el.prependChild @fragment
     @el.style.webkitTransition = 'none'
-    @el.style.webkitTransform = 'translate3d(0,-64px,0)'
+    @el.style.webkitTransform = 'translate3d(0,-63px,0)'
     setTimeout () =>
       @el.style.webkitTransition = '-webkit-transform .5s'
       @el.style.webkitTransform = 'translate3d(0,0,0)'
       @el.addEventListener 'webkitTransitionEnd', (e) =>
         @el.style.webkitTransition = @el.style.webkitTransform = null
         @el.removeEventListener 'webkitTransitionEnd', arguments.callee
+    , 1
+
+  removeEntry: (e) ->
+    entry = e.detail.entry
+    elem = document.getElementById("entry_#{entry.date}")
+    @el.style.webkitTransition = 'none'
+    setTimeout () =>
+      @el.style.webkitTransition = '-webkit-transform .25s'
+      @el.style.webkitTransform = 'translate3d(0,-63px,0)'
+      @el.addEventListener 'webkitTransitionEnd', (e) =>
+        @el.style.webkitTransition = @el.style.webkitTransform = null
+        @el.removeEventListener 'webkitTransitionEnd', arguments.callee
+        elem?.parentNode.removeChild(elem)
     , 1
 
 
@@ -182,7 +200,17 @@ class app.TopView extends app.View
 class app.UndoView extends app.View
   events: ->
     window.addEventListener 'shake', @
-  handleEvent: ->
-    @undo() if confirm('Undo answer?')
+    document.addEventListener 'entry:added', @
+
+  handleEvent: (e) ->
+    @enable() if e.type == 'entry:added'
+    @undo() if e.type == 'shake'
+
+  enable: ->
+    @enabled = true
+
   undo: ->
-    document.dispatchEvent new CustomEvent('entries:undo')
+    return unless @enabled
+    if confirm('Undo entry?')
+      document.dispatchEvent new CustomEvent('entry:undo')
+      @enabled = false

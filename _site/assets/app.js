@@ -13,7 +13,8 @@
         scroller: new app.ScrollView(document.getElementById('list')),
         input: new app.InputView(document.getElementById('input')),
         stats: new app.StatsView(document.getElementById('stats')),
-        history: new app.HistoryView(document.getElementById('history'))
+        history: new app.HistoryView(document.getElementById('history')),
+        undo: new app.UndoView(window)
       };
       app.entries = new app.EntriesCollection();
       this.listen();
@@ -39,7 +40,18 @@
   app.EntriesCollection = (function() {
     function EntriesCollection() {
       this.restore();
+      this.events();
     }
+
+    EntriesCollection.prototype.events = function() {
+      return document.addEventListener('entry:undo', this);
+    };
+
+    EntriesCollection.prototype.handleEvent = function(e) {
+      if (e.type === 'entry:undo') {
+        return this.pop();
+      }
+    };
 
     EntriesCollection.prototype.restore = function() {
       this.records = [];
@@ -54,13 +66,31 @@
 
     EntriesCollection.prototype.save = function() {
       localStorage["mira:entries"] = JSON.stringify(this.records);
-      this.broadcastChange();
       return this.records;
     };
 
     EntriesCollection.prototype.add = function(entry) {
       this.records.push(entry);
+      document.dispatchEvent(new CustomEvent('entry:added', {
+        detail: {
+          collection: this,
+          entry: entry
+        }
+      }));
       return this.save();
+    };
+
+    EntriesCollection.prototype.pop = function() {
+      var entry;
+      entry = this.records.pop();
+      this.save();
+      document.dispatchEvent(new CustomEvent('entry:removed', {
+        detail: {
+          collection: this,
+          entry: entry
+        }
+      }));
+      return entry;
     };
 
     EntriesCollection.prototype.getRecords = function() {
@@ -70,7 +100,8 @@
     EntriesCollection.prototype.reset = function() {
       this.records = [];
       document.dispatchEvent(new CustomEvent('entries:reset'));
-      return this.save();
+      this.save();
+      return this.broadcastChange();
     };
 
     EntriesCollection.prototype.seed = function() {
@@ -196,22 +227,24 @@
       this.el.addEventListener('touchmove', function(e) {
         return e.preventDefault();
       });
-      return document.addEventListener('entries:changed', this);
+      document.addEventListener('entries:changed', this);
+      document.addEventListener('entry:added', this);
+      return document.addEventListener('entry:removed', this);
     };
 
     TogglingView.prototype.handleEvent = function(e) {
-      if (e.type === 'entries:changed') {
-        return this.onEntryChange(e);
-      }
+      return this.onEntryChange(e);
     };
 
     TogglingView.prototype.onEntryChange = function(e) {
-      var entries, lastDate, lastEntry, now;
-      entries = e.detail.collection.getRecords();
-      lastEntry = entries.pop();
-      lastDate = new Date(lastEntry != null ? lastEntry.date : void 0).setHours(0, 0, 0, 0) || 0;
-      now = new Date().setHours(0, 0, 0, 0);
-      return this.toggle(now, lastDate);
+      var entries, lastDate, lastEntry, now, _ref;
+      entries = (_ref = e.detail.collection) != null ? _ref.getRecords() : void 0;
+      if (entries != null) {
+        lastEntry = entries.pop();
+        lastDate = new Date(lastEntry != null ? lastEntry.date : void 0).setHours(0, 0, 0, 0) || 0;
+        now = new Date().setHours(0, 0, 0, 0);
+        return this.toggle(now, lastDate);
+      }
     };
 
     TogglingView.prototype.toggle = function(now, previously) {
@@ -246,7 +279,7 @@
     }
 
     StatsView.prototype.handleEvent = function(e) {
-      if (e.type === 'entries:changed') {
+      if (e.type === 'entries:changed' || e.type === 'entry:added') {
         this.rerender(e);
       }
       return StatsView.__super__.handleEvent.apply(this, arguments);
@@ -287,7 +320,6 @@
 
     InputView.prototype.events = function() {
       this.el.addEventListener(app.CLICK_EVENT, this);
-      this.el.addEventListener('touchcancel', this);
       return InputView.__super__.events.apply(this, arguments);
     };
 
@@ -367,8 +399,9 @@
 
     HistoryView.prototype.events = function() {
       document.addEventListener('entries:changed', this);
-      document.addEventListener('topview:height', this);
-      return document.addEventListener('app:loaded', this);
+      document.addEventListener('entry:added', this);
+      document.addEventListener('entry:removed', this);
+      return document.addEventListener('topview:height', this);
     };
 
     HistoryView.prototype.handleEvent = function(e) {
@@ -378,13 +411,12 @@
       if (e.type === 'topview:height') {
         this.adjustHeight(e);
       }
-      if (e.type === 'app:loaded') {
-        return this.enableAnimation();
+      if (e.type === 'entry:added') {
+        this.addEntry(e);
       }
-    };
-
-    HistoryView.prototype.enableAnimation = function() {
-      return this.animate = true;
+      if (e.type === 'entry:removed') {
+        return this.removeEntry(e);
+      }
     };
 
     HistoryView.prototype.onEntryChange = function(event) {
@@ -394,6 +426,7 @@
 
     HistoryView.prototype.render = function() {
       var entry, _i, _len, _ref;
+      this.fragment = document.createDocumentFragment();
       this.el.innerHTML = '';
       if (this.entries != null) {
         _ref = this.entries.reverse();
@@ -402,10 +435,7 @@
           this.renderEntry(entry);
         }
       }
-      this.el.appendChild(this.fragment);
-      if (this.animate) {
-        return this.slideDown();
-      }
+      return this.el.appendChild(this.fragment);
     };
 
     HistoryView.prototype.renderEntry = function(entry) {
@@ -426,9 +456,14 @@
       }
     };
 
-    HistoryView.prototype.slideDown = function() {
+    HistoryView.prototype.addEntry = function(e) {
+      var entry;
+      entry = e.detail.entry;
+      this.fragment = document.createDocumentFragment();
+      this.renderEntry(entry);
+      this.el.prependChild(this.fragment);
       this.el.style.webkitTransition = 'none';
-      this.el.style.webkitTransform = 'translate3d(0,-64px,0)';
+      this.el.style.webkitTransform = 'translate3d(0,-63px,0)';
       return setTimeout((function(_this) {
         return function() {
           _this.el.style.webkitTransition = '-webkit-transform .5s';
@@ -436,6 +471,24 @@
           return _this.el.addEventListener('webkitTransitionEnd', function(e) {
             _this.el.style.webkitTransition = _this.el.style.webkitTransform = null;
             return _this.el.removeEventListener('webkitTransitionEnd', arguments.callee);
+          });
+        };
+      })(this), 1);
+    };
+
+    HistoryView.prototype.removeEntry = function(e) {
+      var elem, entry;
+      entry = e.detail.entry;
+      elem = document.getElementById("entry_" + entry.date);
+      this.el.style.webkitTransition = 'none';
+      return setTimeout((function(_this) {
+        return function() {
+          _this.el.style.webkitTransition = '-webkit-transform .25s';
+          _this.el.style.webkitTransform = 'translate3d(0,-63px,0)';
+          return _this.el.addEventListener('webkitTransitionEnd', function(e) {
+            _this.el.style.webkitTransition = _this.el.style.webkitTransform = null;
+            _this.el.removeEventListener('webkitTransitionEnd', arguments.callee);
+            return elem != null ? elem.parentNode.removeChild(elem) : void 0;
           });
         };
       })(this), 1);
@@ -481,17 +534,31 @@
     }
 
     UndoView.prototype.events = function() {
-      return window.addEventListener('shake', this);
+      window.addEventListener('shake', this);
+      return document.addEventListener('entry:added', this);
     };
 
-    UndoView.prototype.handleEvent = function() {
-      if (confirm('Undo answer?')) {
+    UndoView.prototype.handleEvent = function(e) {
+      if (e.type === 'entry:added') {
+        this.enable();
+      }
+      if (e.type === 'shake') {
         return this.undo();
       }
     };
 
+    UndoView.prototype.enable = function() {
+      return this.enabled = true;
+    };
+
     UndoView.prototype.undo = function() {
-      return document.dispatchEvent(new CustomEvent('entries:undo'));
+      if (!this.enabled) {
+        return;
+      }
+      if (confirm('Undo entry?')) {
+        document.dispatchEvent(new CustomEvent('entry:undo'));
+        return this.enabled = false;
+      }
     };
 
     return UndoView;
