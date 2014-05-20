@@ -136,6 +136,7 @@ class app.HistoryView extends app.View
     if @entries?
       @renderEntry(entry) for entry in @entries.reverse()
     @el.appendChild @fragment
+    @slideDown() if @animate
 
   renderEntry: (entry) ->
     date = new Date(entry.date)
@@ -150,10 +151,20 @@ class app.HistoryView extends app.View
     "
     @fragment.appendChild elem
 
-
   adjustHeight: (e) ->
     offset = e.detail.height
     @el.style.top = offset + 'px' if offset?
+
+  slideDown: ->
+    @el.style.webkitTransition = 'none'
+    @el.style.webkitTransform = 'translate3d(0,-64px,0)'
+    setTimeout () =>
+      @el.style.webkitTransition = '-webkit-transform 1s'
+      @el.style.webkitTransform = 'translate3d(0,0,0)'
+      @el.addEventListener 'webkitTransitionEnd', (e) =>
+        @el.style.webkitTransition = 'none'
+        @el.removeEventListener 'webkitTransitionEnd', arguments.callee
+    , 1
 
 
 class app.TopView extends app.View

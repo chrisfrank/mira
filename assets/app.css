@@ -107,12 +107,11 @@ h1 {
   font-size: 1.5em;
   font-weight: 300; }
 
-#prompt {
-  border-bottom: 1px solid #383838;
+#top {
   background: rgba(0, 0, 0, 0.95); }
 
-#input {
-  background: rgba(0, 0, 0, 0.95); }
+#prompt {
+  border-bottom: 1px solid #383838; }
 
 #input, #stats {
   border-bottom: 1px solid #383838;
@@ -123,7 +122,7 @@ h1 {
   background-size: 1px 63px; }
 
 #stats {
-  background: rgba(20, 20, 20, 0.98); }
+  background: rgba(20, 20, 20, 0.8); }
   #stats .percentage-yes {
     background: #4cd964;
     border-right: 1px solid black;

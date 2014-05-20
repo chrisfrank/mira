@@ -20,13 +20,14 @@ h1 {
   font-weight: 300;
 }
 
+#top {
+  background: rgba(0,0,0,.95);
+}
 #prompt {
   border-bottom: 1px solid $black;
-  background: rgba(0,0,0,.95);
 }
 
 #input {
-  background: rgba(0,0,0,.95);
 }
 #input, #stats {
   border-bottom: 1px solid $black;
@@ -39,7 +40,7 @@ h1 {
 }
 
 #stats {
-  background: rgba(20,20,20,.98);
+  background: rgba(20,20,20,.8);
   .percentage {
   }
   .percentage-yes {

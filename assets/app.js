@@ -402,7 +402,10 @@
           this.renderEntry(entry);
         }
       }
-      return this.el.appendChild(this.fragment);
+      this.el.appendChild(this.fragment);
+      if (this.animate) {
+        return this.slideDown();
+      }
     };
 
     HistoryView.prototype.renderEntry = function(entry) {
@@ -421,6 +424,21 @@
       if (offset != null) {
         return this.el.style.top = offset + 'px';
       }
+    };
+
+    HistoryView.prototype.slideDown = function() {
+      this.el.style.webkitTransition = 'none';
+      this.el.style.webkitTransform = 'translate3d(0,-64px,0)';
+      return setTimeout((function(_this) {
+        return function() {
+          _this.el.style.webkitTransition = '-webkit-transform 1s';
+          _this.el.style.webkitTransform = 'translate3d(0,0,0)';
+          return _this.el.addEventListener('webkitTransitionEnd', function(e) {
+            _this.el.style.webkitTransition = 'none';
+            return _this.el.removeEventListener('webkitTransitionEnd', arguments.callee);
+          });
+        };
+      })(this), 1);
     };
 
     return HistoryView;
