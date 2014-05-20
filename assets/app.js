@@ -473,4 +473,29 @@
 
   })(app.View);
 
+  app.UndoView = (function(_super) {
+    __extends(UndoView, _super);
+
+    function UndoView() {
+      return UndoView.__super__.constructor.apply(this, arguments);
+    }
+
+    UndoView.prototype.events = function() {
+      return window.addEventListener('shake', this);
+    };
+
+    UndoView.prototype.handleEvent = function() {
+      if (confirm('Undo answer?')) {
+        return this.undo();
+      }
+    };
+
+    UndoView.prototype.undo = function() {
+      return document.dispatchEvent(new CustomEvent('entries:undo'));
+    };
+
+    return UndoView;
+
+  })(app.View);
+
 }).call(this);

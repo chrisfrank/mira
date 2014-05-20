@@ -179,3 +179,10 @@ class app.TopView extends app.View
         height: @el.offsetHeight
     })
 
+class app.UndoView extends app.View
+  events: ->
+    window.addEventListener 'shake', @
+  handleEvent: ->
+    @undo() if confirm('Undo answer?')
+  undo: ->
+    document.dispatchEvent new CustomEvent('entries:undo')
