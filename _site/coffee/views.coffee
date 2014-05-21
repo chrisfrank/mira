@@ -43,8 +43,8 @@ class app.TogglingView extends app.View
   events: ->
     @el.addEventListener 'touchmove', (e) -> e.preventDefault()
     document.addEventListener 'entries:changed', @
-    document.addEventListener 'entry:added', @
     document.addEventListener 'entry:removed', @
+    document.addEventListener 'entry:added', @
 
   handleEvent: (e) ->
     @onEntryChange(e)
@@ -61,25 +61,19 @@ class app.TogglingView extends app.View
     if (now > previously) then @show() else @hide()
 
   hide: ->
-    @el.style.opacity = '0'
-    @el.style.zIndex = 0
-    document.dispatchEvent new CustomEvent 'toggling_view:shown'
+    @el.classList.remove('input')
+    @el.classList.add('output')
 
   show: ->
-    @el.style.opacity = '1'
-    @el.style.zIndex = 1
-    document.dispatchEvent new CustomEvent 'toggling_view:shown'
+    @el.classList.remove('output')
+    @el.classList.add('input')
 
-class app.StatsView extends app.TogglingView
+class app.StatsView extends app.View
+  events: ->
+    document.addEventListener 'entries:changed', @
+    document.addEventListener 'entry:added', @
 
   handleEvent: (e) ->
-    @rerender(e) if e.type == 'entries:changed' || e.type == 'entry:added'
-    super
-
-  toggle: (now, previously) ->
-    if (now <= previously) then @show() else @hide()
-
-  rerender: (e) ->
     entries = e.detail.collection.getRecords()
     @yeas = entries.filter (entry) -> entry.answer == 1
     @nays = entries.filter (entry) -> entry.answer == 0
@@ -92,16 +86,11 @@ class app.StatsView extends app.TogglingView
       </div>
     "
 
-class app.InputView extends app.TogglingView
+class app.InputView extends app.View
   events: ->
-    @el.addEventListener app.CLICK_EVENT, @
-    super
+    @el.addEventListener 'touchend', @
 
   handleEvent: (e) ->
-    @newEntry(e) if e.type == app.CLICK_EVENT
-    super
-
-  newEntry: (e) ->
     target = e.target
     val = target.getAttribute 'data-val'
     if val?
@@ -210,7 +199,7 @@ class app.HistoryView extends app.View
 
 class app.TopView extends app.View
   events: ->
-    document.addEventListener 'toggling_view:shown', @
+    document.addEventListener 'toggling_view:toggled', @
     window.addEventListener 'orientationchange', @
     document.addEventListener 'question:changed', @
     document.addEventListener 'question:restored', @

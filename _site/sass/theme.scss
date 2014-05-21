@@ -13,6 +13,7 @@ html, body {
   background: black;
   color: white;
   font-weight: 300;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1 {
@@ -31,7 +32,7 @@ h1 {
 }
 #input, #stats {
   border-bottom: 1px solid $black;
-  -webkit-transition: opacity .3s;
+  -webkit-transition: opacity 1s;
 }
 
 #history {

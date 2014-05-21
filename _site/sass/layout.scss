@@ -16,22 +16,36 @@
   }
 }
 
-#meta {
+$tHeight: 104px;
+
+#toggle {
+  height: $tHeight;
   position: relative;
-  height: 105px;
+  &.input {
+    #input {
+      opacity: 1;
+      z-index: 2;
+    }
+  }
+  &.output {
+    #stats {
+      opacity: 1;
+    }
+  }
 }
 
 #input, #stats {
-  opacity: 0;
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
   height: 100%;
+  width: 100%;
+  opacity: 0;
 }
 
 #input {
-  padding: 1em;
+  padding: 1em 0;
+  opacity: 0;
 }
 
 #stats {

@@ -9,6 +9,7 @@
       app.views = {
         prompt: new app.PromptView(document.getElementById('prompt')),
         scroller: new app.ScrollView(document.getElementById('list')),
+        toggle: new app.TogglingView(document.getElementById('toggle')),
         input: new app.InputView(document.getElementById('input')),
         stats: new app.StatsView(document.getElementById('stats')),
         history: new app.HistoryView(document.getElementById('history')),
@@ -306,8 +307,8 @@
         return e.preventDefault();
       });
       document.addEventListener('entries:changed', this);
-      document.addEventListener('entry:added', this);
-      return document.addEventListener('entry:removed', this);
+      document.addEventListener('entry:removed', this);
+      return document.addEventListener('entry:added', this);
     };
 
     TogglingView.prototype.handleEvent = function(e) {
@@ -334,15 +335,13 @@
     };
 
     TogglingView.prototype.hide = function() {
-      this.el.style.opacity = '0';
-      this.el.style.zIndex = 0;
-      return document.dispatchEvent(new CustomEvent('toggling_view:shown'));
+      this.el.classList.remove('input');
+      return this.el.classList.add('output');
     };
 
     TogglingView.prototype.show = function() {
-      this.el.style.opacity = '1';
-      this.el.style.zIndex = 1;
-      return document.dispatchEvent(new CustomEvent('toggling_view:shown'));
+      this.el.classList.remove('output');
+      return this.el.classList.add('input');
     };
 
     return TogglingView;
@@ -356,22 +355,12 @@
       return StatsView.__super__.constructor.apply(this, arguments);
     }
 
+    StatsView.prototype.events = function() {
+      document.addEventListener('entries:changed', this);
+      return document.addEventListener('entry:added', this);
+    };
+
     StatsView.prototype.handleEvent = function(e) {
-      if (e.type === 'entries:changed' || e.type === 'entry:added') {
-        this.rerender(e);
-      }
-      return StatsView.__super__.handleEvent.apply(this, arguments);
-    };
-
-    StatsView.prototype.toggle = function(now, previously) {
-      if (now <= previously) {
-        return this.show();
-      } else {
-        return this.hide();
-      }
-    };
-
-    StatsView.prototype.rerender = function(e) {
       var entries, noPct, yesPct;
       entries = e.detail.collection.getRecords();
       this.yeas = entries.filter(function(entry) {
@@ -387,7 +376,7 @@
 
     return StatsView;
 
-  })(app.TogglingView);
+  })(app.View);
 
   app.InputView = (function(_super) {
     __extends(InputView, _super);
@@ -397,18 +386,10 @@
     }
 
     InputView.prototype.events = function() {
-      this.el.addEventListener(app.CLICK_EVENT, this);
-      return InputView.__super__.events.apply(this, arguments);
+      return this.el.addEventListener('touchend', this);
     };
 
     InputView.prototype.handleEvent = function(e) {
-      if (e.type === app.CLICK_EVENT) {
-        this.newEntry(e);
-      }
-      return InputView.__super__.handleEvent.apply(this, arguments);
-    };
-
-    InputView.prototype.newEntry = function(e) {
       var target, val;
       target = e.target;
       val = target.getAttribute('data-val');
@@ -427,7 +408,7 @@
 
     return InputView;
 
-  })(app.TogglingView);
+  })(app.View);
 
   app.ScrollView = (function(_super) {
     __extends(ScrollView, _super);
@@ -584,7 +565,7 @@
     }
 
     TopView.prototype.events = function() {
-      document.addEventListener('toggling_view:shown', this);
+      document.addEventListener('toggling_view:toggled', this);
       window.addEventListener('orientationchange', this);
       document.addEventListener('question:changed', this);
       return document.addEventListener('question:restored', this);
