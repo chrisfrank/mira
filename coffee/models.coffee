@@ -16,5 +16,29 @@ class app.Entry
       answer: @getAnswer()
     }
 
+class app.Question
+  constructor: ->
+    @q = localStorage['mira:question'] || "If this were your last day on earth, would you want to do what you're about to do today?"
+    @events()
+    document.dispatchEvent new CustomEvent('question:restored', {
+      detail:
+        question: @q
+    })
 
+  events: ->
+    document.addEventListener 'question:change', @
+
+  handleEvent: (e) ->
+    @changeQuestion(e.detail.question)
+
+  changeQuestion: (q) ->
+    return unless q?
+    @q = localStorage['mira:question'] = q
+    @broadcastQuestion()
+
+  broadcastQuestion: ->
+    document.dispatchEvent new CustomEvent('question:changed', {
+      detail:
+        question: @q
+    })
 

@@ -5,9 +5,11 @@ class app.EntriesCollection
 
   events: ->
     document.addEventListener 'entry:undo', @
+    document.addEventListener 'question:changed', @
 
   handleEvent: (e) ->
     @pop() if e.type == 'entry:undo'
+    @reset() if e.type == 'question:changed'
 
   restore: ->
     @records = []

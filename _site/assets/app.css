@@ -24,6 +24,8 @@ html, body {
 #prompt {
   padding: 16px;
   position: relative; }
+  #prompt.long h1 {
+    font-size: 1.25em; }
 
 #meta {
   position: relative;

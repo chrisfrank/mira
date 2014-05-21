@@ -11,6 +11,9 @@
 #prompt {
   padding: 16px;
   position: relative;
+  &.long {
+    h1 { font-size: 1.25em; }
+  }
 }
 
 #meta {

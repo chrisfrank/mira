@@ -6,17 +6,17 @@
   app.AppController = (function() {
     function AppController() {
       document.dispatchEvent(new CustomEvent('app:starting'));
-      app.prompt = "Did you need to be in New York City today?";
       app.views = {
-        top: new app.TopView(document.getElementById('top')),
         prompt: new app.PromptView(document.getElementById('prompt')),
         scroller: new app.ScrollView(document.getElementById('list')),
         input: new app.InputView(document.getElementById('input')),
         stats: new app.StatsView(document.getElementById('stats')),
         history: new app.HistoryView(document.getElementById('history')),
-        undo: new app.UndoView(window)
+        undo: new app.UndoView(window),
+        top: new app.TopView(document.getElementById('top'))
       };
       app.entries = new app.EntriesCollection();
+      app.question = new app.Question();
       this.listen();
       document.dispatchEvent(new CustomEvent('app:loaded'));
     }
@@ -44,12 +44,16 @@
     }
 
     EntriesCollection.prototype.events = function() {
-      return document.addEventListener('entry:undo', this);
+      document.addEventListener('entry:undo', this);
+      return document.addEventListener('question:changed', this);
     };
 
     EntriesCollection.prototype.handleEvent = function(e) {
       if (e.type === 'entry:undo') {
-        return this.pop();
+        this.pop();
+      }
+      if (e.type === 'question:changed') {
+        return this.reset();
       }
     };
 
@@ -170,6 +174,45 @@
 
   })();
 
+  app.Question = (function() {
+    function Question() {
+      this.q = localStorage['mira:question'] || "If this were your last day on earth, would you want to do what you're about to do today?";
+      this.events();
+      document.dispatchEvent(new CustomEvent('question:restored', {
+        detail: {
+          question: this.q
+        }
+      }));
+    }
+
+    Question.prototype.events = function() {
+      return document.addEventListener('question:change', this);
+    };
+
+    Question.prototype.handleEvent = function(e) {
+      return this.changeQuestion(e.detail.question);
+    };
+
+    Question.prototype.changeQuestion = function(q) {
+      if (q == null) {
+        return;
+      }
+      this.q = localStorage['mira:question'] = q;
+      return this.broadcastQuestion();
+    };
+
+    Question.prototype.broadcastQuestion = function() {
+      return document.dispatchEvent(new CustomEvent('question:changed', {
+        detail: {
+          question: this.q
+        }
+      }));
+    };
+
+    return Question;
+
+  })();
+
   Node.prototype.prependChild = function(el) {
     return this.childNodes[0] && this.insertBefore(el, this.childNodes[0]) || this.appendChild(el);
   };
@@ -203,13 +246,48 @@
     }
 
     PromptView.prototype.events = function() {
-      return this.el.addEventListener('touchmove', function(e) {
+      this.el.addEventListener('click', this);
+      this.el.addEventListener('touchmove', function(e) {
         return e.preventDefault();
       });
+      this.el.addEventListener('touchstart', this, false);
+      document.addEventListener('question:changed', this);
+      return document.addEventListener('question:restored', this);
     };
 
-    PromptView.prototype.render = function() {
-      return this.el.innerHTML = "<h1>" + app.prompt + "</h1>";
+    PromptView.prototype.handleEvent = function(e) {
+      if (e.type === 'click') {
+        e.preventDefault();
+      }
+      if (e.type === 'touchstart') {
+        this.newQuestion();
+      }
+      if (e.type.match(/question/i)) {
+        return this.rerender(e);
+      }
+    };
+
+    PromptView.prototype.rerender = function(e) {
+      var q;
+      q = e.detail.question;
+      this.el.innerHTML = "<h1>" + q + "</h1>";
+      if (q.length > 60) {
+        return this.el.classList.add('long');
+      } else {
+        return this.el.classList.remove('long');
+      }
+    };
+
+    PromptView.prototype.newQuestion = function() {
+      var q;
+      q = prompt("Ask a new question:");
+      if ((q != null) && q.length > 0) {
+        return document.dispatchEvent(new CustomEvent('question:change', {
+          detail: {
+            question: q
+          }
+        }));
+      }
     };
 
     return PromptView;
@@ -507,7 +585,9 @@
 
     TopView.prototype.events = function() {
       document.addEventListener('toggling_view:shown', this);
-      return window.addEventListener('orientationchange', this);
+      window.addEventListener('orientationchange', this);
+      document.addEventListener('question:changed', this);
+      return document.addEventListener('question:restored', this);
     };
 
     TopView.prototype.handleEvent = function() {

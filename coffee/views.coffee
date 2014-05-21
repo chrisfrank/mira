@@ -15,9 +15,29 @@ class app.View
 
 class app.PromptView extends app.View
   events: ->
+    @el.addEventListener 'click', @
     @el.addEventListener 'touchmove', (e) -> e.preventDefault()
-  render: ->
-    @el.innerHTML = "<h1>#{ app.prompt }</h1>"
+    @el.addEventListener 'touchstart', @, false
+    document.addEventListener 'question:changed', @
+    document.addEventListener 'question:restored', @
+  handleEvent: (e) ->
+    e.preventDefault() if e.type == 'click'
+    @newQuestion() if e.type == 'touchstart'
+    @rerender(e) if e.type.match(/question/i)
+  rerender: (e) ->
+    q = e.detail.question
+    @el.innerHTML = "<h1>#{ q }</h1>"
+    if q.length > 60
+      @el.classList.add 'long'
+    else
+      @el.classList.remove 'long'
+  newQuestion: ->
+    q = prompt "Ask a new question:"
+    if q? && q.length > 0
+      document.dispatchEvent new CustomEvent('question:change', {
+        detail:
+          question: q
+      })
 
 class app.TogglingView extends app.View
   events: ->
@@ -189,6 +209,8 @@ class app.TopView extends app.View
   events: ->
     document.addEventListener 'toggling_view:shown', @
     window.addEventListener 'orientationchange', @
+    document.addEventListener 'question:changed', @
+    document.addEventListener 'question:restored', @
   handleEvent: () ->
     @sendHeight()
   sendHeight: (e) ->
