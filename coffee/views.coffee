@@ -118,6 +118,7 @@ class app.InputView extends app.TogglingView
 
 class app.ScrollView extends app.View
   events: ->
+    window.addEventListener 'resize', @
     @el.addEventListener 'touchstart', @
 
   handleEvent: (e) ->
@@ -125,10 +126,12 @@ class app.ScrollView extends app.View
 
   onTouchStart: (e) ->
     height = @el.getBoundingClientRect().height
-    atTop = @el.scrollTop == 0
-    atBottom = (@el.scrollHeight - @el.scrollTop == height)
-    @el.scrollTop += 1 if atTop
-    @el.scrollTop -=1 if atBottom
+    atTop = @el.scrollTop <= 0
+    atBottom = (@el.scrollHeight - @el.scrollTop >= height)
+    if atTop
+      @el.scrollTop = 1
+    else if atBottom
+      @el.scrollTop = @el.scrollHeight - height - 1
 
 
 class app.HistoryView extends app.View

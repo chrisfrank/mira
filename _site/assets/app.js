@@ -437,6 +437,7 @@
     }
 
     ScrollView.prototype.events = function() {
+      window.addEventListener('resize', this);
       return this.el.addEventListener('touchstart', this);
     };
 
@@ -449,13 +450,12 @@
     ScrollView.prototype.onTouchStart = function(e) {
       var atBottom, atTop, height;
       height = this.el.getBoundingClientRect().height;
-      atTop = this.el.scrollTop === 0;
-      atBottom = this.el.scrollHeight - this.el.scrollTop === height;
+      atTop = this.el.scrollTop <= 0;
+      atBottom = this.el.scrollHeight - this.el.scrollTop >= height;
       if (atTop) {
-        this.el.scrollTop += 1;
-      }
-      if (atBottom) {
-        return this.el.scrollTop -= 1;
+        return this.el.scrollTop = 1;
+      } else if (atBottom) {
+        return this.el.scrollTop = this.el.scrollHeight - height - 1;
       }
     };
 
