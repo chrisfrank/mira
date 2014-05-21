@@ -18,7 +18,7 @@ class app.Entry
 
 class app.Question
   constructor: ->
-    @q = localStorage['mira:question'] || "If this were your last day on earth, would you want to do what you're about to do today?"
+    @q = localStorage['mira:question'] || "Was today a good day?"
     @events()
     document.dispatchEvent new CustomEvent('question:restored', {
       detail:

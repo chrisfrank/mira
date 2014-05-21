@@ -176,7 +176,7 @@
 
   app.Question = (function() {
     function Question() {
-      this.q = localStorage['mira:question'] || "If this were your last day on earth, would you want to do what you're about to do today?";
+      this.q = localStorage['mira:question'] || "Was today a good day?";
       this.events();
       document.dispatchEvent(new CustomEvent('question:restored', {
         detail: {
