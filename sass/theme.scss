@@ -70,8 +70,7 @@ h1 {
       top: 0;
       right: 0;
       height: 100%;
-      background: black;
-      width: 1px;
+      border-right: 1px solid black;
       -webkit-transform: scaleX(0.5);
     }
   }
