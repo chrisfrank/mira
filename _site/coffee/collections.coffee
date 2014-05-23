@@ -54,7 +54,7 @@ class app.EntriesCollection
     i = 0
     while (i < 20)
       @add new app.Entry({
-        answer: i%2
+        answer: 1
         date: new Date(1987,0,i)
       })
       i += 1

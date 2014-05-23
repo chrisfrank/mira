@@ -41,7 +41,8 @@ html, body {
 #stats {
   width: 100%;
   height: 40px;
-  display: none; }
+  display: none;
+  padding: 0 16px; }
   #stats .percentages {
     position: relative;
     height: 100%;
@@ -144,17 +145,14 @@ h1 {
 
 #stats {
   background: #212121; }
+  #stats .percentage {
+    line-height: 40px;
+    font-size: 12px;
+    overflow: hidden; }
+    #stats .percentage:after {
+      content: attr(data-pct); }
   #stats .percentage-yes {
     background: #4cd964; }
-    #stats .percentage-yes:after {
-      content: '';
-      display: block;
-      position: absolute;
-      top: 0;
-      right: 0;
-      height: 100%;
-      border-right: 1px solid black;
-      -webkit-transform: scaleX(0.5); }
   #stats .percentage-no {
     background: #ff3b30; }
 

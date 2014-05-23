@@ -83,8 +83,8 @@ class app.StatsView extends app.View
       noPct = 100 - yesPct
       @el.innerHTML = "
         <div class='percentages'>
-          <div class='percentage percentage-yes' style='width: #{yesPct}%'></div>
-          <div class='percentage percentage-no' style='width: #{noPct}%'></div>
+          <div data-pct='#{yesPct}%' class='percentage percentage-yes' style='width: #{yesPct}%'></div>
+          <div data-pct='#{noPct}%' class='percentage percentage-no' style='width: #{noPct}%'></div>
         </div>
       "
   show: ->

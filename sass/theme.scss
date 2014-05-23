@@ -60,19 +60,15 @@ h1 {
 #stats {
   background: $black;
   .percentage {
+    line-height: 40px;
+    font-size: 12px;
+    overflow: hidden;
+    &:after {
+      content: attr(data-pct);
+    }
   }
   .percentage-yes {
     background: $green;
-    &:after {
-      content: '';
-      display: block;
-      position: absolute;
-      top: 0;
-      right: 0;
-      height: 100%;
-      border-right: 1px solid black;
-      -webkit-transform: scaleX(0.5);
-    }
   }
   .percentage-no {
     background: $red;

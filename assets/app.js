@@ -116,7 +116,7 @@
       _results = [];
       while (i < 20) {
         this.add(new app.Entry({
-          answer: i % 2,
+          answer: 1,
           date: new Date(1987, 0, i)
         }));
         _results.push(i += 1);
@@ -366,7 +366,7 @@
         });
         yesPct = Math.floor(this.yeas.length / entries.length * 100);
         noPct = 100 - yesPct;
-        return this.el.innerHTML = "<div class='percentages'> <div class='percentage percentage-yes' style='width: " + yesPct + "%'></div> <div class='percentage percentage-no' style='width: " + noPct + "%'></div> </div>";
+        return this.el.innerHTML = "<div class='percentages'> <div data-pct='" + yesPct + "%' class='percentage percentage-yes' style='width: " + yesPct + "%'></div> <div data-pct='" + noPct + "%' class='percentage percentage-no' style='width: " + noPct + "%'></div> </div>";
       }
     };
 
