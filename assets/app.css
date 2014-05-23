@@ -111,19 +111,28 @@ h1 {
 #top {
   background: black; }
 
-#input, #stats {
-  background: #212121;
+#prompt {
   position: relative; }
-  #input:before, #input:after, #stats:before, #stats:after {
+  #prompt:after {
     content: '';
     display: block;
     width: 100%;
     position: absolute;
     -webkit-transform: scaleY(0.5);
-    border-top: 1px solid #383838; }
-  #input:before, #stats:before {
-    top: 0; }
+    border-top: 1px solid #383838;
+    left: 0;
+    bottom: 0; }
+
+#input, #stats {
+  background: #212121;
+  position: relative; }
   #input:after, #stats:after {
+    content: '';
+    display: block;
+    width: 100%;
+    position: absolute;
+    -webkit-transform: scaleY(0.5);
+    border-top: 1px solid #383838;
     bottom: 0; }
 
 #history {
