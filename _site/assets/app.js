@@ -9,10 +9,10 @@
       app.views = {
         prompt: new app.PromptView(document.getElementById('prompt')),
         scroller: new app.ScrollView(document.getElementById('list')),
-        toggle: new app.TogglingView(document.getElementById('toggle')),
+        toggle: new app.TogglingView(document.createElement('div')),
+        history: new app.HistoryView(document.getElementById('history')),
         input: new app.InputView(document.getElementById('input')),
         stats: new app.StatsView(document.getElementById('stats')),
-        history: new app.HistoryView(document.getElementById('history')),
         undo: new app.UndoView(window),
         top: new app.TopView(document.getElementById('top'))
       };
@@ -300,9 +300,6 @@
     }
 
     TogglingView.prototype.events = function() {
-      this.el.addEventListener('touchmove', function(e) {
-        return e.preventDefault();
-      });
       document.addEventListener('entries:changed', this);
       document.addEventListener('entry:removed', this);
       return document.addEventListener('entry:added', this);
@@ -319,26 +316,17 @@
         lastEntry = entries.pop();
         lastDate = new Date(lastEntry != null ? lastEntry.date : void 0).setHours(0, 0, 0, 0) || 0;
         now = new Date().setHours(0, 0, 0, 0);
-        return this.toggle(now, lastDate);
+        return this.broadcastDate(now, lastDate);
       }
     };
 
-    TogglingView.prototype.toggle = function(now, previously) {
-      if (now > previously) {
-        return this.show();
-      } else {
-        return this.hide();
-      }
-    };
-
-    TogglingView.prototype.hide = function() {
-      this.el.classList.remove('input');
-      return this.el.classList.add('output');
-    };
-
-    TogglingView.prototype.show = function() {
-      this.el.classList.remove('output');
-      return this.el.classList.add('input');
+    TogglingView.prototype.broadcastDate = function(now, lastDate) {
+      return document.dispatchEvent(new CustomEvent('datemath', {
+        detail: {
+          now: now,
+          then: lastDate
+        }
+      }));
     };
 
     return TogglingView;
@@ -354,21 +342,40 @@
 
     StatsView.prototype.events = function() {
       document.addEventListener('entries:changed', this);
-      return document.addEventListener('entry:added', this);
+      document.addEventListener('entry:added', this);
+      return document.addEventListener('datemath', this);
     };
 
     StatsView.prototype.handleEvent = function(e) {
-      var entries, noPct, yesPct;
-      entries = e.detail.collection.getRecords();
-      this.yeas = entries.filter(function(entry) {
-        return entry.answer === 1;
-      });
-      this.nays = entries.filter(function(entry) {
-        return entry.answer === 0;
-      });
-      yesPct = Math.floor(this.yeas.length / entries.length * 100);
-      noPct = 100 - yesPct;
-      return this.el.innerHTML = "<div class='percentages'> <div class='percentage percentage-yes' style='width: " + yesPct + "%'></div> <div class='percentage percentage-no' style='width: " + noPct + "%'></div> </div>";
+      var entries, noPct, now, prev, yesPct;
+      if (e.type === 'datemath') {
+        now = e.detail.now;
+        prev = e.detail.then;
+        if (now <= prev) {
+          return this.show();
+        } else {
+          return this.hide();
+        }
+      } else {
+        entries = e.detail.collection.getRecords();
+        this.yeas = entries.filter(function(entry) {
+          return entry.answer === 1;
+        });
+        this.nays = entries.filter(function(entry) {
+          return entry.answer === 0;
+        });
+        yesPct = Math.floor(this.yeas.length / entries.length * 100);
+        noPct = 100 - yesPct;
+        return this.el.innerHTML = "<div class='percentages'> <div class='percentage percentage-yes' style='width: " + yesPct + "%'></div> <div class='percentage percentage-no' style='width: " + noPct + "%'></div> </div>";
+      }
+    };
+
+    StatsView.prototype.show = function() {
+      return this.el.style.display = 'block';
+    };
+
+    StatsView.prototype.hide = function() {
+      return this.el.style.display = 'none';
     };
 
     return StatsView;
@@ -383,20 +390,41 @@
     }
 
     InputView.prototype.events = function() {
-      return this.el.addEventListener('click', this);
+      this.el.addEventListener('click', this);
+      return document.addEventListener('datemath', this);
     };
 
     InputView.prototype.handleEvent = function(e) {
-      var target, val;
-      target = e.target;
-      val = target.getAttribute('data-val');
-      if (val != null) {
-        return document.dispatchEvent(new CustomEvent('entry:create', {
-          detail: {
-            answer: parseInt(val)
-          }
-        }));
+      var now, prev, target, val;
+      if (e.type === 'click') {
+        target = e.target;
+        val = target.getAttribute('data-val');
+        if (val != null) {
+          return document.dispatchEvent(new CustomEvent('entry:create', {
+            detail: {
+              answer: parseInt(val)
+            }
+          }));
+        }
+      } else if (e.type === 'datemath') {
+        now = e.detail.now;
+        prev = e.detail.then;
+        if (now > prev) {
+          return this.show();
+        } else {
+          return this.hide();
+        }
       }
+    };
+
+    InputView.prototype.show = function() {
+      this.el.classList.add('is_visible');
+      return document.dispatchEvent(new CustomEvent('toggling_view:toggled'));
+    };
+
+    InputView.prototype.hide = function() {
+      this.el.classList.remove('is_visible');
+      return document.dispatchEvent(new CustomEvent('toggling_view:toggled'));
     };
 
     InputView.prototype.render = function() {
@@ -467,7 +495,8 @@
     HistoryView.prototype.events = function() {
       document.addEventListener('entries:changed', this);
       document.addEventListener('entry:added', this);
-      return document.addEventListener('entry:removed', this);
+      document.addEventListener('entry:removed', this);
+      return document.addEventListener('datemath', this);
     };
 
     HistoryView.prototype.handleEvent = function(e) {
@@ -478,7 +507,10 @@
         this.addEntry(e);
       }
       if (e.type === 'entry:removed') {
-        return this.removeEntry(e);
+        this.removeEntry(e);
+      }
+      if (e.type === 'datemath') {
+        return this.adjustOffset(e);
       }
     };
 
@@ -516,37 +548,26 @@
       entry = e.detail.entry;
       this.fragment = document.createDocumentFragment();
       this.renderEntry(entry);
-      this.el.prependChild(this.fragment);
-      this.el.style.webkitTransition = 'none';
-      this.el.style.webkitTransform = 'translate3d(0,-63px,0)';
-      return setTimeout((function(_this) {
-        return function() {
-          _this.el.style.webkitTransition = '-webkit-transform .5s';
-          _this.el.style.webkitTransform = 'translate3d(0,0,0)';
-          return _this.el.addEventListener('webkitTransitionEnd', function(e) {
-            _this.el.style.webkitTransition = _this.el.style.webkitTransform = null;
-            return _this.el.removeEventListener('webkitTransitionEnd', arguments.callee);
-          });
-        };
-      })(this), 1);
+      return this.el.prependChild(this.fragment);
     };
 
     HistoryView.prototype.removeEntry = function(e) {
       var elem, entry;
       entry = e.detail.entry;
       elem = document.getElementById("entry_" + entry.date);
-      this.el.style.webkitTransition = 'none';
-      return setTimeout((function(_this) {
-        return function() {
-          _this.el.style.webkitTransition = '-webkit-transform .25s';
-          _this.el.style.webkitTransform = 'translate3d(0,-63px,0)';
-          return _this.el.addEventListener('webkitTransitionEnd', function(e) {
-            _this.el.style.webkitTransition = _this.el.style.webkitTransform = null;
-            _this.el.removeEventListener('webkitTransitionEnd', arguments.callee);
-            return elem != null ? elem.parentNode.removeChild(elem) : void 0;
-          });
-        };
-      })(this), 1);
+      return elem != null ? elem.parentNode.removeChild(elem) : void 0;
+    };
+
+    HistoryView.prototype.adjustOffset = function(e) {
+      var now, prev;
+      console.log(e);
+      now = e.detail.now;
+      prev = e.detail.then;
+      if (now > prev) {
+        return this.el.style.top = '0';
+      } else {
+        return this.el.style.top = '41px';
+      }
     };
 
     return HistoryView;

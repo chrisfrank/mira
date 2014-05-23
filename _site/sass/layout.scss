@@ -21,45 +21,28 @@
 
 $tHeight: 104px;
 
-#toggle {
-  height: $tHeight;
-  position: relative;
-  &.input {
-    #input {
-      opacity: 1;
-      z-index: 2;
-    }
-  }
-  &.output {
-    #stats {
-      opacity: 1;
-    }
-  }
-}
-
-#input, #stats {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  opacity: 0;
-}
 
 #input {
   padding: 1em 0;
-  opacity: 0;
+  display: none;
+  &.is_visible {
+    display: block;
+  }
 }
 
 #stats {
+  width: 100%;
+  height: 40px;
+  display: none;
   .percentages {
     position: relative;
     height: 100%;
+    width: 100%;
   }
   .percentage {
     height: 1px;
     position: absolute;
-    top: 52px;
+    top: 20px;
   }
   .percentage-yes {
     left: 0;
@@ -83,7 +66,6 @@ $tHeight: 104px;
 #history {
   margin-left: 1em;
   position: absolute;
-  top: 0;
   left: 0;
   right: 0;
   bottom: -2px;

@@ -39,7 +39,6 @@ class app.PromptView extends app.View
 
 class app.TogglingView extends app.View
   events: ->
-    @el.addEventListener 'touchmove', (e) -> e.preventDefault()
     document.addEventListener 'entries:changed', @
     document.addEventListener 'entry:removed', @
     document.addEventListener 'entry:added', @
@@ -53,49 +52,74 @@ class app.TogglingView extends app.View
       lastEntry = entries.pop()
       lastDate = new Date(lastEntry?.date).setHours(0,0,0,0) || 0
       now = new Date().setHours(0,0,0,0)
-      @toggle(now, lastDate)
+      @broadcastDate(now, lastDate)
 
-  toggle: (now, previously) ->
-    if (now > previously) then @show() else @hide()
-
-  hide: ->
-    @el.classList.remove('input')
-    @el.classList.add('output')
-
-  show: ->
-    @el.classList.remove('output')
-    @el.classList.add('input')
+  broadcastDate: (now, lastDate) ->
+    document.dispatchEvent new CustomEvent('datemath', {
+      detail:
+        now: now
+        then: lastDate
+    })
 
 class app.StatsView extends app.View
   events: ->
     document.addEventListener 'entries:changed', @
     document.addEventListener 'entry:added', @
+    document.addEventListener 'datemath', @
 
   handleEvent: (e) ->
-    entries = e.detail.collection.getRecords()
-    @yeas = entries.filter (entry) -> entry.answer == 1
-    @nays = entries.filter (entry) -> entry.answer == 0
-    yesPct = Math.floor(@yeas.length / entries.length * 100)
-    noPct = 100 - yesPct
-    @el.innerHTML = "
-      <div class='percentages'>
-        <div class='percentage percentage-yes' style='width: #{yesPct}%'></div>
-        <div class='percentage percentage-no' style='width: #{noPct}%'></div>
-      </div>
-    "
+    if e.type == 'datemath'
+      now = e.detail.now
+      prev = e.detail.then
+      if now <= prev
+        @show()
+      else
+        @hide()
+    else
+      entries = e.detail.collection.getRecords()
+      @yeas = entries.filter (entry) -> entry.answer == 1
+      @nays = entries.filter (entry) -> entry.answer == 0
+      yesPct = Math.floor(@yeas.length / entries.length * 100)
+      noPct = 100 - yesPct
+      @el.innerHTML = "
+        <div class='percentages'>
+          <div class='percentage percentage-yes' style='width: #{yesPct}%'></div>
+          <div class='percentage percentage-no' style='width: #{noPct}%'></div>
+        </div>
+      "
+  show: ->
+    @el.style.display = 'block'
+
+  hide: ->
+    @el.style.display = 'none'
 
 class app.InputView extends app.View
   events: ->
     @el.addEventListener 'click', @
+    document.addEventListener 'datemath', @
 
   handleEvent: (e) ->
-    target = e.target
-    val = target.getAttribute 'data-val'
-    if val?
-      document.dispatchEvent new CustomEvent('entry:create', {
-        detail:
-          answer: parseInt(val)
-      })
+    if e.type == 'click'
+      target = e.target
+      val = target.getAttribute 'data-val'
+      if val?
+        document.dispatchEvent new CustomEvent('entry:create', {
+          detail:
+            answer: parseInt(val)
+        })
+    else if e.type == 'datemath'
+      now = e.detail.now
+      prev = e.detail.then
+      if now > prev
+        @show()
+      else
+        @hide()
+  show: ->
+    @el.classList.add('is_visible')
+    document.dispatchEvent new CustomEvent 'toggling_view:toggled'
+  hide: ->
+    @el.classList.remove('is_visible')
+    document.dispatchEvent new CustomEvent 'toggling_view:toggled'
 
   render: ->
     @el.innerHTML = "
@@ -135,11 +159,13 @@ class app.HistoryView extends app.View
     document.addEventListener 'entries:changed', @
     document.addEventListener 'entry:added', @
     document.addEventListener 'entry:removed', @
+    document.addEventListener 'datemath', @
 
   handleEvent: (e) ->
     @onEntryChange(e) if e.type == 'entries:changed'
     @addEntry(e) if e.type == 'entry:added'
     @removeEntry(e) if e.type == 'entry:removed'
+    @adjustOffset(e) if e.type == 'datemath'
 
   onEntryChange: (event) ->
     @entries = event.detail.collection.getRecords()
@@ -171,28 +197,20 @@ class app.HistoryView extends app.View
     @fragment = document.createDocumentFragment()
     @renderEntry(entry)
     @el.prependChild @fragment
-    @el.style.webkitTransition = 'none'
-    @el.style.webkitTransform = 'translate3d(0,-63px,0)'
-    setTimeout () =>
-      @el.style.webkitTransition = '-webkit-transform .5s'
-      @el.style.webkitTransform = 'translate3d(0,0,0)'
-      @el.addEventListener 'webkitTransitionEnd', (e) =>
-        @el.style.webkitTransition = @el.style.webkitTransform = null
-        @el.removeEventListener 'webkitTransitionEnd', arguments.callee
-    , 1
 
   removeEntry: (e) ->
     entry = e.detail.entry
     elem = document.getElementById("entry_#{entry.date}")
-    @el.style.webkitTransition = 'none'
-    setTimeout () =>
-      @el.style.webkitTransition = '-webkit-transform .25s'
-      @el.style.webkitTransform = 'translate3d(0,-63px,0)'
-      @el.addEventListener 'webkitTransitionEnd', (e) =>
-        @el.style.webkitTransition = @el.style.webkitTransform = null
-        @el.removeEventListener 'webkitTransitionEnd', arguments.callee
-        elem?.parentNode.removeChild(elem)
-    , 1
+    elem?.parentNode.removeChild(elem)
+
+  adjustOffset: (e) ->
+    console.log e
+    now = e.detail.now
+    prev = e.detail.then
+    if now > prev
+      @el.style.top = '0'
+    else
+      @el.style.top = '41px'
 
 
 class app.TopView extends app.View

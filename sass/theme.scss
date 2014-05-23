@@ -25,7 +25,10 @@ h1 {
   background: black;
 }
 
-#toggle {
+#input {
+}
+
+#input, #stats {
   background: $black;
   position: relative;
   &:before, &:after {
@@ -44,16 +47,13 @@ h1 {
   }
 }
 
-#input, #stats {
-  -webkit-transition: opacity .5s;
-}
-
 #history {
   background: url(bg.png);
   background-size: 1px 63px;
 }
 
 #stats {
+  background: $black;
   .percentage {
   }
   .percentage-yes {

@@ -5,10 +5,10 @@ class app.AppController
     app.views = {
       prompt: new app.PromptView(document.getElementById 'prompt')
       scroller: new app.ScrollView(document.getElementById 'list')
-      toggle: new app.TogglingView(document.getElementById 'toggle')
+      toggle: new app.TogglingView(document.createElement('div'))
+      history: new app.HistoryView(document.getElementById 'history')
       input: new app.InputView(document.getElementById 'input')
       stats: new app.StatsView(document.getElementById 'stats')
-      history: new app.HistoryView(document.getElementById 'history')
       undo: new app.UndoView(window)
       top: new app.TopView(document.getElementById 'top')
     }
