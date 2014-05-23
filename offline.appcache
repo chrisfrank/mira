@@ -3,7 +3,7 @@
 CACHE MANIFEST
 # rev {{ site.time | date_to_xmlschema }}
 index.html
-assets/shake.js
+assets/lib.js
 assets/app.js
 assets/app.css
 assets/bg.png

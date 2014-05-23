@@ -35,7 +35,8 @@
   })();
 
   document.addEventListener('DOMContentLoaded', function() {
-    return app.controller = new app.AppController;
+    app.controller = new app.AppController;
+    return FastClick.attach(document.body);
   });
 
   app.EntriesCollection = (function() {
@@ -177,7 +178,7 @@
 
   app.Question = (function() {
     function Question() {
-      this.q = localStorage['mira:question'] || "Was today a good day?";
+      this.q = localStorage['mira:question'] || "If today were the last day of your life, would you want to do what you're about to do?";
       this.events();
       document.dispatchEvent(new CustomEvent('question:restored', {
         detail: {
@@ -251,16 +252,12 @@
       this.el.addEventListener('touchmove', function(e) {
         return e.preventDefault();
       });
-      this.el.addEventListener('touchstart', this, false);
       document.addEventListener('question:changed', this);
       return document.addEventListener('question:restored', this);
     };
 
     PromptView.prototype.handleEvent = function(e) {
       if (e.type === 'click') {
-        e.preventDefault();
-      }
-      if (e.type === 'touchstart') {
         this.newQuestion();
       }
       if (e.type.match(/question/i)) {
@@ -386,7 +383,7 @@
     }
 
     InputView.prototype.events = function() {
-      return this.el.addEventListener('touchend', this);
+      return this.el.addEventListener('click', this);
     };
 
     InputView.prototype.handleEvent = function(e) {
@@ -418,13 +415,16 @@
     }
 
     ScrollView.prototype.events = function() {
-      window.addEventListener('resize', this);
-      return this.el.addEventListener('touchstart', this);
+      this.el.addEventListener('touchstart', this);
+      return document.addEventListener('topview:height', this);
     };
 
     ScrollView.prototype.handleEvent = function(e) {
       if (e.type === 'touchstart') {
-        return this.onTouchStart(e);
+        this.onTouchStart(e);
+      }
+      if (e.type === 'topview:height') {
+        return this.adjustHeight(e);
       }
     };
 
@@ -437,6 +437,14 @@
         return this.el.scrollTop = 1;
       } else if (atBottom) {
         return this.el.scrollTop = this.el.scrollHeight - height - 1;
+      }
+    };
+
+    ScrollView.prototype.adjustHeight = function(e) {
+      var offset;
+      offset = e.detail.height;
+      if (offset != null) {
+        return this.el.style.top = offset + 'px';
       }
     };
 
@@ -459,16 +467,12 @@
     HistoryView.prototype.events = function() {
       document.addEventListener('entries:changed', this);
       document.addEventListener('entry:added', this);
-      document.addEventListener('entry:removed', this);
-      return document.addEventListener('topview:height', this);
+      return document.addEventListener('entry:removed', this);
     };
 
     HistoryView.prototype.handleEvent = function(e) {
       if (e.type === 'entries:changed') {
         this.onEntryChange(e);
-      }
-      if (e.type === 'topview:height') {
-        this.adjustHeight(e);
       }
       if (e.type === 'entry:added') {
         this.addEntry(e);
@@ -505,14 +509,6 @@
       elem.id = "entry_" + entry.date;
       elem.innerHTML = "<div class='entry_date'> " + this.months[date.getMonth()] + " " + (date.getDate()) + " </div> <div class='entry_answer'></div>";
       return this.fragment.appendChild(elem);
-    };
-
-    HistoryView.prototype.adjustHeight = function(e) {
-      var offset;
-      offset = e.detail.height;
-      if (offset != null) {
-        return this.el.style.top = offset + 'px';
-      }
     };
 
     HistoryView.prototype.addEntry = function(e) {

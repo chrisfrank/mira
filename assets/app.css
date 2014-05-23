@@ -22,10 +22,11 @@ html, body {
   z-index: 2; }
 
 #prompt {
-  padding: 16px;
+  padding: 1em 2em;
   position: relative; }
   #prompt.long h1 {
-    font-size: 1.25em; }
+    font-size: 1em;
+    font-weight: 400; }
 
 #toggle {
   height: 104px;
@@ -73,6 +74,7 @@ html, body {
 #history {
   margin-left: 1em;
   position: absolute;
+  top: 0;
   left: 0;
   right: 0;
   bottom: -2px;
@@ -117,28 +119,37 @@ h1 {
   font-weight: 300; }
 
 #top {
-  background: rgba(0, 0, 0, 0.95); }
+  background: black; }
 
-#prompt {
-  border-bottom: 1px solid #383838; }
+#toggle {
+  background: #212121;
+  position: relative; }
+  #toggle:before, #toggle:after {
+    content: '';
+    display: block;
+    width: 100%;
+    position: absolute;
+    -webkit-transform: scaleY(0.5);
+    border-top: 1px solid #383838; }
+  #toggle:before {
+    top: 0; }
+  #toggle:after {
+    bottom: 0; }
 
 #input, #stats {
-  border-bottom: 1px solid #383838;
-  -webkit-transition: opacity 1s; }
+  -webkit-transition: opacity .5s; }
 
 #history {
   background: url(bg.png);
   background-size: 1px 63px; }
 
-#stats {
-  background: rgba(20, 20, 20, 0.8); }
-  #stats .percentage-yes {
-    background: #4cd964;
-    border-right: 1px solid black;
-    box-shadow: 0 0 1em #4cd964; }
-  #stats .percentage-no {
-    background: #ff3b30;
-    box-shadow: 0 0 1em #ff3b30; }
+#stats .percentage-yes {
+  background: #4cd964;
+  border-right: 1px solid black;
+  box-shadow: 0 0 1em #4cd964; }
+#stats .percentage-no {
+  background: #ff3b30;
+  box-shadow: 0 0 1em #ff3b30; }
 
 .button {
   cursor: pointer;
@@ -170,7 +181,7 @@ h1 {
     bottom: 0;
     height: 0;
     width: 100%;
-    border-bottom: 1px solid #383838;
+    border-bottom: 1px solid #212121;
     -webkit-transform: scaleY(0.5); }
 
 .entry_answer {

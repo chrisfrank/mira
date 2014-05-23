@@ -24,3 +24,4 @@ class app.AppController
 
 document.addEventListener 'DOMContentLoaded', ->
   app.controller = new app.AppController
+  FastClick.attach(document.body)

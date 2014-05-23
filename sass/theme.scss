@@ -4,7 +4,7 @@ $blue: #32aadc;
 $grey: #efeff4;
 $dark_grey: #888888;
 $white: #f8f8f8;
-$black: #383838;
+$black: #212121;
 
 html, body {
   font-family: 'avenir', sans-serif;
@@ -22,17 +22,30 @@ h1 {
 }
 
 #top {
-  background: rgba(0,0,0,.95);
-}
-#prompt {
-  border-bottom: 1px solid $black;
+  background: black;
 }
 
-#input {
+#toggle {
+  background: $black;
+  position: relative;
+  &:before, &:after {
+    content: '';
+    display: block;
+    width: 100%;
+    position: absolute;
+    -webkit-transform: scaleY(0.5);
+    border-top: 1px solid #383838;
+  }
+  &:before {
+    top: 0;
+  }
+  &:after {
+    bottom: 0;
+  }
 }
+
 #input, #stats {
-  border-bottom: 1px solid $black;
-  -webkit-transition: opacity 1s;
+  -webkit-transition: opacity .5s;
 }
 
 #history {
@@ -41,7 +54,6 @@ h1 {
 }
 
 #stats {
-  background: rgba(20,20,20,.8);
   .percentage {
   }
   .percentage-yes {

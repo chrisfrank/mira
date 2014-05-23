@@ -1,7 +1,7 @@
 CACHE MANIFEST
-# rev 2014-05-21T19:28:44-04:00
+# rev 2014-05-23T18:07:22-04:00
 index.html
-assets/shake.js
+assets/lib.js
 assets/app.js
 assets/app.css
 assets/bg.png

@@ -17,12 +17,10 @@ class app.PromptView extends app.View
   events: ->
     @el.addEventListener 'click', @
     @el.addEventListener 'touchmove', (e) -> e.preventDefault()
-    @el.addEventListener 'touchstart', @, false
     document.addEventListener 'question:changed', @
     document.addEventListener 'question:restored', @
   handleEvent: (e) ->
-    e.preventDefault() if e.type == 'click'
-    @newQuestion() if e.type == 'touchstart'
+    @newQuestion() if e.type == 'click'
     @rerender(e) if e.type.match(/question/i)
   rerender: (e) ->
     q = e.detail.question
@@ -88,7 +86,7 @@ class app.StatsView extends app.View
 
 class app.InputView extends app.View
   events: ->
-    @el.addEventListener 'touchend', @
+    @el.addEventListener 'click', @
 
   handleEvent: (e) ->
     target = e.target
@@ -107,11 +105,12 @@ class app.InputView extends app.View
 
 class app.ScrollView extends app.View
   events: ->
-    window.addEventListener 'resize', @
     @el.addEventListener 'touchstart', @
+    document.addEventListener 'topview:height', @
 
   handleEvent: (e) ->
     @onTouchStart(e) if e.type == 'touchstart'
+    @adjustHeight(e) if e.type == 'topview:height'
 
   onTouchStart: (e) ->
     height = @el.getBoundingClientRect().height
@@ -121,6 +120,10 @@ class app.ScrollView extends app.View
       @el.scrollTop = 1
     else if atBottom
       @el.scrollTop = @el.scrollHeight - height - 1
+
+  adjustHeight: (e) ->
+    offset = e.detail.height
+    @el.style.top = offset + 'px' if offset?
 
 
 class app.HistoryView extends app.View
@@ -132,11 +135,9 @@ class app.HistoryView extends app.View
     document.addEventListener 'entries:changed', @
     document.addEventListener 'entry:added', @
     document.addEventListener 'entry:removed', @
-    document.addEventListener 'topview:height', @
 
   handleEvent: (e) ->
     @onEntryChange(e) if e.type == 'entries:changed'
-    @adjustHeight(e) if e.type == 'topview:height'
     @addEntry(e) if e.type == 'entry:added'
     @removeEntry(e) if e.type == 'entry:removed'
 
@@ -164,9 +165,6 @@ class app.HistoryView extends app.View
     "
     @fragment.appendChild elem
 
-  adjustHeight: (e) ->
-    offset = e.detail.height
-    @el.style.top = offset + 'px' if offset?
 
   addEntry: (e) ->
     entry = e.detail.entry
