@@ -12,9 +12,9 @@
   padding: 1em 2em;
   position: relative;
   &.long {
+    padding: 1em;
     h1 {
-      font-size: 1em;
-      font-weight: 400;
+      font-size: 1.25em;
     }
   }
 }

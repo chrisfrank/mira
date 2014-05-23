@@ -24,9 +24,10 @@ html, body {
 #prompt {
   padding: 1em 2em;
   position: relative; }
-  #prompt.long h1 {
-    font-size: 1em;
-    font-weight: 400; }
+  #prompt.long {
+    padding: 1em; }
+    #prompt.long h1 {
+      font-size: 1.25em; }
 
 #toggle {
   height: 104px;
