@@ -123,10 +123,10 @@ h1 {
     left: 0;
     bottom: 0; }
 
-#input, #stats {
+#input {
   background: #212121;
   position: relative; }
-  #input:after, #stats:after {
+  #input:after {
     content: '';
     display: block;
     width: 100%;
