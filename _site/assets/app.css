@@ -42,7 +42,7 @@ html, body {
   width: 100%;
   height: 40px;
   display: none;
-  padding: 0 16px; }
+  padding: 16px 16px 0; }
   #stats .percentages {
     position: relative;
     height: 100%;
@@ -144,9 +144,8 @@ h1 {
   background-size: 1px 63px; }
 
 #stats .percentage {
-  line-height: 40px;
-  font-size: 12px;
-  overflow: hidden; }
+  line-height: 24px;
+  font-size: 12px; }
   #stats .percentage:after {
     content: attr(data-pct); }
 #stats .percentage-yes {

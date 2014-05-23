@@ -59,9 +59,8 @@ h1 {
 
 #stats {
   .percentage {
-    line-height: 40px;
+    line-height: 24px;
     font-size: 12px;
-    overflow: hidden;
     &:after {
       content: attr(data-pct);
     }
