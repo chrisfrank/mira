@@ -50,7 +50,8 @@ html, body {
   #stats .percentage {
     height: 100%;
     position: absolute;
-    top: 0; }
+    top: 0;
+    overflow: hidden; }
   #stats .percentage-yes {
     left: 0; }
   #stats .percentage-no {
