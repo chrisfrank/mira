@@ -143,18 +143,16 @@ h1 {
   background: url(bg.png);
   background-size: 1px 63px; }
 
-#stats {
-  background: #212121; }
-  #stats .percentage {
-    line-height: 40px;
-    font-size: 12px;
-    overflow: hidden; }
-    #stats .percentage:after {
-      content: attr(data-pct); }
-  #stats .percentage-yes {
-    background: #4cd964; }
-  #stats .percentage-no {
-    background: #ff3b30; }
+#stats .percentage {
+  line-height: 40px;
+  font-size: 12px;
+  overflow: hidden; }
+  #stats .percentage:after {
+    content: attr(data-pct); }
+#stats .percentage-yes {
+  background: #4cd964; }
+#stats .percentage-no {
+  background: #ff3b30; }
 
 .button {
   cursor: pointer;
