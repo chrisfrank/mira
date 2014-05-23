@@ -419,12 +419,23 @@
 
     InputView.prototype.show = function() {
       this.el.classList.add('is_visible');
+      this.el.style.position = 'relative';
+      this.el.style.webkitTransform = 'scaleY(1)';
+      this.el.style.opacity = '1';
       return document.dispatchEvent(new CustomEvent('toggling_view:toggled'));
     };
 
     InputView.prototype.hide = function() {
-      this.el.classList.remove('is_visible');
-      return document.dispatchEvent(new CustomEvent('toggling_view:toggled'));
+      this.el.style.position = 'absolute';
+      document.dispatchEvent(new CustomEvent('toggling_view:toggled'));
+      this.el.style.webkitTransform = 'scaleY(0.4)';
+      this.el.style.opacity = '0';
+      return this.el.addEventListener('webkitTransitionEnd', (function(_this) {
+        return function(e) {
+          _this.el.classList.remove('is_visible');
+          return _this.el.removeEventListener(e.type, arguments.callee);
+        };
+      })(this));
     };
 
     InputView.prototype.render = function() {
@@ -560,7 +571,6 @@
 
     HistoryView.prototype.adjustOffset = function(e) {
       var now, prev;
-      console.log(e);
       now = e.detail.now;
       prev = e.detail.then;
       if (now > prev) {

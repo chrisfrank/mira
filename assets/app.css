@@ -31,9 +31,12 @@ html, body {
 
 #input {
   padding: 1em 0;
-  display: none; }
+  width: 100%;
+  -webkit-transition: all .3s;
+  -webkit-transform-origin: center top;
+  visibility: hidden; }
   #input.is_visible {
-    display: block; }
+    visibility: visible; }
 
 #stats {
   width: 100%;
@@ -142,8 +145,17 @@ h1 {
 #stats {
   background: #212121; }
   #stats .percentage-yes {
-    background: #4cd964;
-    border-right: 1px solid black; }
+    background: #4cd964; }
+    #stats .percentage-yes:after {
+      content: '';
+      display: block;
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+      background: black;
+      width: 1px;
+      -webkit-transform: scaleX(0.5); }
   #stats .percentage-no {
     background: #ff3b30; }
 

@@ -24,9 +24,12 @@ $tHeight: 104px;
 
 #input {
   padding: 1em 0;
-  display: none;
+  width: 100%;
+  -webkit-transition: all .3s;
+  -webkit-transform-origin: center top;
+  visibility: hidden;
   &.is_visible {
-    display: block;
+    visibility: visible;
   }
 }
 
