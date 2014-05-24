@@ -34,22 +34,24 @@
     <script src="assets/lib.js"></script>
     <script src="assets/app.js"></script>
     <script>
-      FastClick.attach(document.body)
-      app.views = {
-        prompt: new app.PromptView(document.getElementById('prompt')),
-        scroller: new app.ScrollView(document.getElementById('list')),
-        datemath: new app.DateMathView(document.createElement('div')),
-        history: new app.HistoryView(document.getElementById('history')),
-        input: new app.InputView(document.getElementById('input')),
-        stats: new app.StatsView(document.getElementById('stats')),
-        undo: new app.UndoView(window)
-      }
-      app.entries = new app.EntriesCollection()
-      app.question = new app.Question()
-      document.addEventListener('entry:create', function(e){
-        app.entries.add(new app.Entry({answer: e.detail.answer}))
+      document.addEventListener('DOMContentLoaded', function(e) {
+        FastClick.attach(document.body)
+        app.views = {
+          prompt: new app.PromptView(document.getElementById('prompt')),
+          scroller: new app.ScrollView(document.getElementById('list')),
+          datemath: new app.DateMathView(document.createElement('div')),
+          history: new app.HistoryView(document.getElementById('history')),
+          input: new app.InputView(document.getElementById('input')),
+          stats: new app.StatsView(document.getElementById('stats')),
+          undo: new app.UndoView(window)
+        }
+        app.entries = new app.EntriesCollection()
+        app.question = new app.Question()
+        document.addEventListener('entry:create', function(e){
+          app.entries.add(new app.Entry({answer: e.detail.answer}))
+        })
+        document.dispatchEvent(new CustomEvent('app:loaded'))
       })
-      document.dispatchEvent(new CustomEvent('app:loaded'))
     </script>
   </body>
 </html>
