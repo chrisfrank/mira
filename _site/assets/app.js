@@ -3,41 +3,26 @@
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  app.AppController = (function() {
-    function AppController() {
-      document.dispatchEvent(new CustomEvent('app:starting'));
-      app.views = {
-        prompt: new app.PromptView(document.getElementById('prompt')),
-        scroller: new app.ScrollView(document.getElementById('list')),
-        toggle: new app.TogglingView(document.createElement('div')),
-        history: new app.HistoryView(document.getElementById('history')),
-        input: new app.InputView(document.getElementById('input')),
-        stats: new app.StatsView(document.getElementById('stats')),
-        undo: new app.UndoView(window),
-        top: new app.TopView(document.getElementById('top'))
-      };
-      app.entries = new app.EntriesCollection();
-      app.question = new app.Question();
-      this.listen();
-      document.dispatchEvent(new CustomEvent('app:loaded'));
+  app.View = (function() {
+    function View(el) {
+      if (el == null) {
+        throw "Cannot construct view without an HTML element";
+      }
+      this.el = el;
+      this.initialize();
+      this.render();
+      this.events();
     }
 
-    AppController.prototype.listen = function() {
-      return document.addEventListener('entry:create', function(e) {
-        return app.entries.add(new app.Entry({
-          answer: e.detail.answer
-        }));
-      });
-    };
+    View.prototype.initialize = function() {};
 
-    return AppController;
+    View.prototype.render = function() {};
+
+    View.prototype.events = function() {};
+
+    return View;
 
   })();
-
-  document.addEventListener('DOMContentLoaded', function() {
-    app.controller = new app.AppController;
-    return FastClick.attach(document.body);
-  });
 
   app.EntriesCollection = (function() {
     function EntriesCollection() {
@@ -72,17 +57,12 @@
 
     EntriesCollection.prototype.save = function() {
       localStorage["mira:entries"] = JSON.stringify(this.records);
+      this.broadcastChange();
       return this.records;
     };
 
     EntriesCollection.prototype.add = function(entry) {
       this.records.push(entry);
-      document.dispatchEvent(new CustomEvent('entry:added', {
-        detail: {
-          collection: this,
-          entry: entry
-        }
-      }));
       return this.save();
     };
 
@@ -90,12 +70,6 @@
       var entry;
       entry = this.records.pop();
       this.save();
-      document.dispatchEvent(new CustomEvent('entry:removed', {
-        detail: {
-          collection: this,
-          entry: entry
-        }
-      }));
       return entry;
     };
 
@@ -106,8 +80,7 @@
     EntriesCollection.prototype.reset = function() {
       this.records = [];
       document.dispatchEvent(new CustomEvent('entries:reset'));
-      this.save();
-      return this.broadcastChange();
+      return this.save();
     };
 
     EntriesCollection.prototype.seed = function() {
@@ -136,7 +109,178 @@
 
   })();
 
+  app.DateMathView = (function(_super) {
+    __extends(DateMathView, _super);
+
+    function DateMathView() {
+      return DateMathView.__super__.constructor.apply(this, arguments);
+    }
+
+    DateMathView.prototype.events = function() {
+      return document.addEventListener('entries:changed', this);
+    };
+
+    DateMathView.prototype.handleEvent = function(e) {
+      return this.onEntryChange(e);
+    };
+
+    DateMathView.prototype.onEntryChange = function(e) {
+      var entries, lastDate, lastEntry, now, _ref;
+      entries = (_ref = e.detail.collection) != null ? _ref.getRecords() : void 0;
+      if (entries != null) {
+        lastEntry = entries.pop();
+        lastDate = new Date(lastEntry != null ? lastEntry.date : void 0).setHours(0, 0, 0, 0) || 0;
+        now = new Date().setHours(0, 0, 0, 0);
+        return this.broadcastDate(now, lastDate);
+      }
+    };
+
+    DateMathView.prototype.broadcastDate = function(now, lastDate) {
+      return document.dispatchEvent(new CustomEvent('datemath', {
+        detail: {
+          now: now,
+          then: lastDate
+        }
+      }));
+    };
+
+    return DateMathView;
+
+  })(app.View);
+
+  app.HistoryView = (function(_super) {
+    __extends(HistoryView, _super);
+
+    function HistoryView() {
+      return HistoryView.__super__.constructor.apply(this, arguments);
+    }
+
+    HistoryView.prototype.initialize = function() {
+      this.fragment = document.createDocumentFragment();
+      return this.months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    };
+
+    HistoryView.prototype.events = function() {
+      return document.addEventListener('entries:changed', this);
+    };
+
+    HistoryView.prototype.handleEvent = function(e) {
+      if (e.type === 'entries:changed') {
+        return this.onEntryChange(e);
+      }
+    };
+
+    HistoryView.prototype.onEntryChange = function(event) {
+      this.entries = event.detail.collection.getRecords();
+      return this.render();
+    };
+
+    HistoryView.prototype.render = function() {
+      var entry, _i, _len, _ref;
+      this.fragment = document.createDocumentFragment();
+      this.el.innerHTML = '';
+      if (this.entries != null) {
+        _ref = this.entries.reverse();
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          entry = _ref[_i];
+          this.renderEntry(entry);
+        }
+      }
+      return this.el.appendChild(this.fragment);
+    };
+
+    HistoryView.prototype.renderEntry = function(entry) {
+      var date, elem;
+      date = new Date(entry.date);
+      elem = document.createElement('div');
+      elem.className = "entry entry-" + entry.answer;
+      elem.id = "entry_" + entry.date;
+      elem.innerHTML = "<div class='entry_date'> " + this.months[date.getMonth()] + " " + (date.getDate()) + " </div> <div class='entry_answer'></div>";
+      return this.fragment.appendChild(elem);
+    };
+
+    return HistoryView;
+
+  })(app.View);
+
   document.addEventListener('app:started', function(e) {});
+
+  app.InputView = (function(_super) {
+    __extends(InputView, _super);
+
+    function InputView() {
+      return InputView.__super__.constructor.apply(this, arguments);
+    }
+
+    InputView.prototype.events = function() {
+      this.el.addEventListener('click', this);
+      this.el.addEventListener('touchmove', this);
+      return document.addEventListener('datemath', this);
+    };
+
+    InputView.prototype.handleEvent = function(e) {
+      switch (e.type) {
+        case 'click':
+          return this.createEntry(e);
+        case 'datemath':
+          return this.toggle(e);
+        case 'touchmove':
+          return this.block(e);
+      }
+    };
+
+    InputView.prototype.createEntry = function(e) {
+      var target, val;
+      target = e.target;
+      val = target.getAttribute('data-val');
+      if (val != null) {
+        return document.dispatchEvent(new CustomEvent('entry:create', {
+          detail: {
+            answer: parseInt(val)
+          }
+        }));
+      }
+    };
+
+    InputView.prototype.toggle = function(e) {
+      var now, prev;
+      now = e.detail.now;
+      prev = e.detail.then;
+      if (now > prev) {
+        return this.show();
+      } else {
+        return this.hide();
+      }
+    };
+
+    InputView.prototype.show = function() {
+      this.el.classList.add('is_visible');
+      this.el.style.position = 'relative';
+      return this.el.style.opacity = '1';
+    };
+
+    InputView.prototype.hide = function() {
+      this.el.style.position = 'absolute';
+      this.el.style.opacity = '0';
+      return this.el.addEventListener('webkitTransitionEnd', (function(_this) {
+        return function(e) {
+          _this.el.classList.remove('is_visible');
+          return _this.el.removeEventListener(e.type, arguments.callee);
+        };
+      })(this));
+    };
+
+    InputView.prototype.block = function(e) {
+      return e.preventDefault();
+    };
+
+    InputView.prototype.render = function() {
+      return this.el.innerHTML = "<div data-val=1 class='button button-yes'>Yes</div> <div data-val=0 class='button button-no'>No</div>";
+    };
+
+    return InputView;
+
+  })(app.View);
 
   app.Entry = (function() {
     function Entry(args) {
@@ -215,31 +359,6 @@
 
   })();
 
-  Node.prototype.prependChild = function(el) {
-    return this.childNodes[0] && this.insertBefore(el, this.childNodes[0]) || this.appendChild(el);
-  };
-
-  app.View = (function() {
-    function View(el) {
-      if (el == null) {
-        throw "Cannot construct view without an HTML element";
-      }
-      this.el = el;
-      this.initialize();
-      this.render();
-      this.events();
-    }
-
-    View.prototype.initialize = function() {};
-
-    View.prototype.render = function() {};
-
-    View.prototype.events = function() {};
-
-    return View;
-
-  })();
-
   app.PromptView = (function(_super) {
     __extends(PromptView, _super);
 
@@ -292,44 +411,36 @@
 
   })(app.View);
 
-  app.TogglingView = (function(_super) {
-    __extends(TogglingView, _super);
+  app.ScrollView = (function(_super) {
+    __extends(ScrollView, _super);
 
-    function TogglingView() {
-      return TogglingView.__super__.constructor.apply(this, arguments);
+    function ScrollView() {
+      return ScrollView.__super__.constructor.apply(this, arguments);
     }
 
-    TogglingView.prototype.events = function() {
-      document.addEventListener('entries:changed', this);
-      document.addEventListener('entry:removed', this);
-      return document.addEventListener('entry:added', this);
+    ScrollView.prototype.events = function() {
+      return this.el.addEventListener('touchstart', this);
     };
 
-    TogglingView.prototype.handleEvent = function(e) {
-      return this.onEntryChange(e);
-    };
-
-    TogglingView.prototype.onEntryChange = function(e) {
-      var entries, lastDate, lastEntry, now, _ref;
-      entries = (_ref = e.detail.collection) != null ? _ref.getRecords() : void 0;
-      if (entries != null) {
-        lastEntry = entries.pop();
-        lastDate = new Date(lastEntry != null ? lastEntry.date : void 0).setHours(0, 0, 0, 0) || 0;
-        now = new Date().setHours(0, 0, 0, 0);
-        return this.broadcastDate(now, lastDate);
+    ScrollView.prototype.handleEvent = function(e) {
+      if (e.type === 'touchstart') {
+        return this.onTouchStart(e);
       }
     };
 
-    TogglingView.prototype.broadcastDate = function(now, lastDate) {
-      return document.dispatchEvent(new CustomEvent('datemath', {
-        detail: {
-          now: now,
-          then: lastDate
-        }
-      }));
+    ScrollView.prototype.onTouchStart = function(e) {
+      var atBottom, atTop, height;
+      height = this.el.getBoundingClientRect().height;
+      atTop = this.el.scrollTop <= 0;
+      atBottom = this.el.scrollHeight - this.el.scrollTop >= height;
+      if (atTop) {
+        return this.el.scrollTop += 1;
+      } else if (atBottom) {
+        return this.el.scrollTop -= 1;
+      }
     };
 
-    return TogglingView;
+    return ScrollView;
 
   })(app.View);
 
@@ -382,239 +493,6 @@
 
   })(app.View);
 
-  app.InputView = (function(_super) {
-    __extends(InputView, _super);
-
-    function InputView() {
-      return InputView.__super__.constructor.apply(this, arguments);
-    }
-
-    InputView.prototype.events = function() {
-      this.el.addEventListener('click', this);
-      this.el.addEventListener('touchmove', this);
-      return document.addEventListener('datemath', this);
-    };
-
-    InputView.prototype.handleEvent = function(e) {
-      var now, prev, target, val;
-      if (e.type === 'click') {
-        target = e.target;
-        val = target.getAttribute('data-val');
-        if (val != null) {
-          return document.dispatchEvent(new CustomEvent('entry:create', {
-            detail: {
-              answer: parseInt(val)
-            }
-          }));
-        }
-      } else if (e.type === 'datemath') {
-        now = e.detail.now;
-        prev = e.detail.then;
-        if (now > prev) {
-          return this.show();
-        } else {
-          return this.hide();
-        }
-      } else if (e.type === 'touchmove') {
-        return e.preventDefault();
-      }
-    };
-
-    InputView.prototype.show = function() {
-      this.el.classList.add('is_visible');
-      this.el.style.position = 'relative';
-      this.el.style.opacity = '1';
-      return document.dispatchEvent(new CustomEvent('toggling_view:toggled'));
-    };
-
-    InputView.prototype.hide = function() {
-      this.el.style.position = 'absolute';
-      document.dispatchEvent(new CustomEvent('toggling_view:toggled'));
-      this.el.style.opacity = '0';
-      return this.el.addEventListener('webkitTransitionEnd', (function(_this) {
-        return function(e) {
-          _this.el.classList.remove('is_visible');
-          return _this.el.removeEventListener(e.type, arguments.callee);
-        };
-      })(this));
-    };
-
-    InputView.prototype.render = function() {
-      return this.el.innerHTML = "<div data-val=1 class='button button-yes'>Yes</div> <div data-val=0 class='button button-no'>No</div>";
-    };
-
-    return InputView;
-
-  })(app.View);
-
-  app.ScrollView = (function(_super) {
-    __extends(ScrollView, _super);
-
-    function ScrollView() {
-      return ScrollView.__super__.constructor.apply(this, arguments);
-    }
-
-    ScrollView.prototype.events = function() {
-      this.el.addEventListener('touchstart', this);
-      return document.addEventListener('topview:height', this);
-    };
-
-    ScrollView.prototype.handleEvent = function(e) {
-      if (e.type === 'touchstart') {
-        this.onTouchStart(e);
-      }
-      if (e.type === 'topview:height') {
-        return this.adjustHeight(e);
-      }
-    };
-
-    ScrollView.prototype.onTouchStart = function(e) {
-      var atBottom, atTop, height;
-      height = this.el.getBoundingClientRect().height;
-      atTop = this.el.scrollTop <= 0;
-      atBottom = this.el.scrollHeight - this.el.scrollTop >= height;
-      if (atTop) {
-        return this.el.scrollTop = 1;
-      } else if (atBottom) {
-        return this.el.scrollTop = this.el.scrollHeight - height - 1;
-      }
-    };
-
-    ScrollView.prototype.adjustHeight = function(e) {
-      var offset;
-      offset = e.detail.height;
-      if (offset != null) {
-        return this.el.style.top = offset + 'px';
-      }
-    };
-
-    return ScrollView;
-
-  })(app.View);
-
-  app.HistoryView = (function(_super) {
-    __extends(HistoryView, _super);
-
-    function HistoryView() {
-      return HistoryView.__super__.constructor.apply(this, arguments);
-    }
-
-    HistoryView.prototype.initialize = function() {
-      this.fragment = document.createDocumentFragment();
-      return this.months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    };
-
-    HistoryView.prototype.events = function() {
-      document.addEventListener('entries:changed', this);
-      document.addEventListener('entry:added', this);
-      document.addEventListener('entry:removed', this);
-      return document.addEventListener('datemath', this);
-    };
-
-    HistoryView.prototype.handleEvent = function(e) {
-      if (e.type === 'entries:changed') {
-        this.onEntryChange(e);
-      }
-      if (e.type === 'entry:added') {
-        this.addEntry(e);
-      }
-      if (e.type === 'entry:removed') {
-        this.removeEntry(e);
-      }
-      if (e.type === 'datemath') {
-        return this.adjustOffset(e);
-      }
-    };
-
-    HistoryView.prototype.onEntryChange = function(event) {
-      this.entries = event.detail.collection.getRecords();
-      return this.render();
-    };
-
-    HistoryView.prototype.render = function() {
-      var entry, _i, _len, _ref;
-      this.fragment = document.createDocumentFragment();
-      this.el.innerHTML = '';
-      if (this.entries != null) {
-        _ref = this.entries.reverse();
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          entry = _ref[_i];
-          this.renderEntry(entry);
-        }
-      }
-      return this.el.appendChild(this.fragment);
-    };
-
-    HistoryView.prototype.renderEntry = function(entry) {
-      var date, elem;
-      date = new Date(entry.date);
-      elem = document.createElement('div');
-      elem.className = "entry entry-" + entry.answer;
-      elem.id = "entry_" + entry.date;
-      elem.innerHTML = "<div class='entry_date'> " + this.months[date.getMonth()] + " " + (date.getDate()) + " </div> <div class='entry_answer'></div>";
-      return this.fragment.appendChild(elem);
-    };
-
-    HistoryView.prototype.addEntry = function(e) {
-      var entry;
-      entry = e.detail.entry;
-      this.fragment = document.createDocumentFragment();
-      this.renderEntry(entry);
-      return this.el.prependChild(this.fragment);
-    };
-
-    HistoryView.prototype.removeEntry = function(e) {
-      var elem, entry;
-      entry = e.detail.entry;
-      elem = document.getElementById("entry_" + entry.date);
-      return elem != null ? elem.parentNode.removeChild(elem) : void 0;
-    };
-
-    HistoryView.prototype.adjustOffset = function(e) {
-      var now, prev;
-      now = e.detail.now;
-      prev = e.detail.then;
-      if (now > prev) {
-        return this.el.style.top = '0';
-      } else {
-        return this.el.style.top = '41px';
-      }
-    };
-
-    return HistoryView;
-
-  })(app.View);
-
-  app.TopView = (function(_super) {
-    __extends(TopView, _super);
-
-    function TopView() {
-      return TopView.__super__.constructor.apply(this, arguments);
-    }
-
-    TopView.prototype.events = function() {
-      document.addEventListener('toggling_view:toggled', this);
-      window.addEventListener('orientationchange', this);
-      document.addEventListener('question:changed', this);
-      return document.addEventListener('question:restored', this);
-    };
-
-    TopView.prototype.handleEvent = function() {
-      return this.sendHeight();
-    };
-
-    TopView.prototype.sendHeight = function(e) {
-      return document.dispatchEvent(new CustomEvent('topview:height', {
-        detail: {
-          height: this.el.offsetHeight
-        }
-      }));
-    };
-
-    return TopView;
-
-  })(app.View);
-
   app.UndoView = (function(_super) {
     __extends(UndoView, _super);
 
@@ -624,11 +502,11 @@
 
     UndoView.prototype.events = function() {
       window.addEventListener('shake', this);
-      return document.addEventListener('entry:added', this);
+      return document.addEventListener('entry:create', this);
     };
 
     UndoView.prototype.handleEvent = function(e) {
-      if (e.type === 'entry:added') {
+      if (e.type === 'entry:create') {
         this.enable();
       }
       if (e.type === 'shake') {

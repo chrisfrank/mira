@@ -16,7 +16,6 @@
                  rel="apple-touch-startup-image" />
     <script>
       window.app = {}
-      app.CLICK_EVENT = 'ontouchstart' in document.documentElement ? 'touchend' : 'click'
     </script>
   </head>
   <body>
@@ -25,12 +24,32 @@
         <div id="prompt"></div>
         <div id="input"></div>
       </div>
-      <div id="list">
-        <div id="stats"></div>
-        <div id="history"></div>
+      <div id="list" class='scrollview-outer'>
+        <div class='scrollview-inner'>
+          <div id="stats"></div>
+          <div id="history"></div>
+        </div>
       </div>
     </div>
     <script src="assets/lib.js"></script>
     <script src="assets/app.js"></script>
+    <script>
+      FastClick.attach(document.body)
+      app.views = {
+        prompt: new app.PromptView(document.getElementById('prompt')),
+        scroller: new app.ScrollView(document.getElementById('list')),
+        datemath: new app.DateMathView(document.createElement('div')),
+        history: new app.HistoryView(document.getElementById('history')),
+        input: new app.InputView(document.getElementById('input')),
+        stats: new app.StatsView(document.getElementById('stats')),
+        undo: new app.UndoView(window)
+      }
+      app.entries = new app.EntriesCollection()
+      app.question = new app.Question()
+      document.addEventListener('entry:create', function(e){
+        app.entries.add(new app.Entry({answer: e.detail.answer}))
+      })
+      document.dispatchEvent(new CustomEvent('app:loaded'))
+    </script>
   </body>
 </html>

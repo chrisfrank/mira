@@ -1,6 +1,15 @@
-.card {
+.scrollview-outer {
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   height: 100%;
 }
+
+.scrollview-inner {
+  height: 100%;
+  overflow: visible;
+}
+
 .button {
   height: 72px;
   width: 72px;
@@ -23,4 +32,5 @@
   width: 20%;
   padding: 6px;
 }
+
 
