@@ -7,8 +7,8 @@ class app.ScrollView extends app.View
 
   onTouchStart: (e) ->
     height = @el.getBoundingClientRect().height
-    atTop = @el.scrollTop <= 0
-    atBottom = (@el.scrollHeight - @el.scrollTop >= height)
+    atTop = @el.scrollTop == 0
+    atBottom = (@el.scrollHeight - @el.scrollTop == height)
     if atTop
       #@el.scrollTop = 1
       @el.scrollTop += 1

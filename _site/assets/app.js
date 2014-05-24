@@ -431,8 +431,8 @@
     ScrollView.prototype.onTouchStart = function(e) {
       var atBottom, atTop, height;
       height = this.el.getBoundingClientRect().height;
-      atTop = this.el.scrollTop <= 0;
-      atBottom = this.el.scrollHeight - this.el.scrollTop >= height;
+      atTop = this.el.scrollTop === 0;
+      atBottom = this.el.scrollHeight - this.el.scrollTop === height;
       if (atTop) {
         return this.el.scrollTop += 1;
       } else if (atBottom) {
