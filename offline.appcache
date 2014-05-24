@@ -1,7 +1,7 @@
 ---
 ---
 CACHE MANIFEST
-# rev {{ site.time | date_to_xmlschema }}
+# rev {{ site.time | date: '%m%d%y%H%M%S' }}
 index.html
 assets/lib.js
 assets/app.js
