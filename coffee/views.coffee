@@ -96,6 +96,7 @@ class app.StatsView extends app.View
 class app.InputView extends app.View
   events: ->
     @el.addEventListener 'click', @
+    @el.addEventListener 'touchmove', @
     document.addEventListener 'datemath', @
 
   handleEvent: (e) ->
@@ -114,17 +115,17 @@ class app.InputView extends app.View
         @show()
       else
         @hide()
+    else if e.type == 'touchmove'
+      e.preventDefault()
   show: ->
     @el.classList.add('is_visible')
     @el.style.position = 'relative'
-    @el.style.webkitTransform = 'scaleY(1)'
     @el.style.opacity = '1'
     document.dispatchEvent new CustomEvent 'toggling_view:toggled'
 
   hide: ->
     @el.style.position = 'absolute'
     document.dispatchEvent new CustomEvent 'toggling_view:toggled'
-    @el.style.webkitTransform = 'scaleY(0.4)'
     @el.style.opacity = '0'
     @el.addEventListener 'webkitTransitionEnd', (e) =>
       @el.classList.remove('is_visible')

@@ -59,8 +59,8 @@ h1 {
 
 #stats {
   .percentage {
-    line-height: 24px;
-    font-size: 12px;
+    line-height: 18px;
+    font-size: 10px;
     &:after {
       content: attr(data-pct);
     }
@@ -70,6 +70,17 @@ h1 {
   }
   .percentage-no {
     background: $red;
+  }
+  .percentages {
+    &:after {
+      content: '';
+      display: block;
+      width: 100%;
+      position: absolute;
+      -webkit-transform: scaleY(0.5);
+      border-top: 1px solid #383838;
+      bottom: 0;
+    }
   }
 }
 

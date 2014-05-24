@@ -391,6 +391,7 @@
 
     InputView.prototype.events = function() {
       this.el.addEventListener('click', this);
+      this.el.addEventListener('touchmove', this);
       return document.addEventListener('datemath', this);
     };
 
@@ -414,13 +415,14 @@
         } else {
           return this.hide();
         }
+      } else if (e.type === 'touchmove') {
+        return e.preventDefault();
       }
     };
 
     InputView.prototype.show = function() {
       this.el.classList.add('is_visible');
       this.el.style.position = 'relative';
-      this.el.style.webkitTransform = 'scaleY(1)';
       this.el.style.opacity = '1';
       return document.dispatchEvent(new CustomEvent('toggling_view:toggled'));
     };
@@ -428,7 +430,6 @@
     InputView.prototype.hide = function() {
       this.el.style.position = 'absolute';
       document.dispatchEvent(new CustomEvent('toggling_view:toggled'));
-      this.el.style.webkitTransform = 'scaleY(0.4)';
       this.el.style.opacity = '0';
       return this.el.addEventListener('webkitTransitionEnd', (function(_this) {
         return function(e) {
