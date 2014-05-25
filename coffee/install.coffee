@@ -3,7 +3,7 @@ app.install = ->
   appIcon = document.createElement('img')
   appIcon.src = document.querySelector('link[rel=apple-touch-icon]').href
   installIcon = document.createElement('img')
-  installIcon.src = '/assets/share-white.png'
+  installIcon.src = 'assets/share-white.png'
   header = document.createElement('h2')
   header.innerText = 'Tap'
   paragraph = document.createElement 'p'
