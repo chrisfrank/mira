@@ -77,7 +77,8 @@ img {
   .install h2 {
     margin: 0; }
   .install img {
-    width: 60px; }
+    width: 60px;
+    height: 60px; }
 
 .scrollview-outer {
   overflow-x: hidden;
