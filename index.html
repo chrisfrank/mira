@@ -34,7 +34,9 @@
     <script src="assets/lib.js"></script>
     <script src="assets/app.js"></script>
     <script>
-      document.addEventListener('DOMContentLoaded', function(e) {
+      standalone = navigator.standalone == true
+      iOS = navigator.userAgent.match(/iphone|ipad|ipod/i)
+      if ((standalone && iOS) || !iOS) {
         FastClick.attach(document.body)
         app.views = {
           prompt: new app.PromptView(document.getElementById('prompt')),
@@ -51,7 +53,10 @@
           app.entries.add(new app.Entry({answer: e.detail.answer}))
         })
         document.dispatchEvent(new CustomEvent('app:loaded'))
-      })
+      }
+      else {
+        app.install()
+      }
     </script>
   </body>
 </html>

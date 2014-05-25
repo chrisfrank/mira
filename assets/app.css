@@ -12,6 +12,10 @@ html, body {
   box-sizing: border-box;
   -webkit-user-select: none; }
 
+img {
+  display: block;
+  margin: 16px auto; }
+
 #app {
   display: block;
   height: 100%;
@@ -67,6 +71,13 @@ html, body {
 #history {
   margin-left: 1em;
   min-height: 100%; }
+
+.install {
+  padding: 16px 48px; }
+  .install h2 {
+    margin: 0; }
+  .install img {
+    width: 60px; }
 
 .scrollview-outer {
   overflow-x: hidden;
